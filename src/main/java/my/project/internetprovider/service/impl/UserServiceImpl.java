@@ -1,8 +1,10 @@
 package my.project.internetprovider.service.impl;
 
 
+import my.project.internetprovider.db.dao.AccountDao;
 import my.project.internetprovider.db.dao.DaoFactory;
 import my.project.internetprovider.db.dao.UserDao;
+import my.project.internetprovider.db.entity.Account;
 import my.project.internetprovider.db.entity.User;
 import my.project.internetprovider.exception.AuthenticationException;
 import my.project.internetprovider.exception.NotFoundException;
@@ -30,12 +32,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User create(User user) {
-        try (UserDao dao = daoFactory.createUserDao()) {
-            user.setSalt(HashUtil.getSalt());
-            user.setPassword(HashUtil.hashPassword(user.getPassword(), user.getSalt()));
+        user.setSalt(HashUtil.getSalt());
+        user.setPassword(HashUtil.hashPassword(user.getPassword(), user.getSalt()));
 
-            return dao.create(user);
+        try (UserDao dao = daoFactory.createUserDao()) {
+            dao.create(user);
         }
+
+        try (AccountDao dao = daoFactory.createAccountDao()) {
+            dao.create(Account.newBuilder()
+                    .setActive(true)
+                    .setUser(user.getId())
+                    .build());
+        }
+
+        return user;
     }
 
     @Override

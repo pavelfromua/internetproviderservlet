@@ -20,24 +20,24 @@ import java.sql.Statement;
  * @author D.Kolesnikov
  * 
  */
-public final class DBManager {
+public final class ConnectionPool {
 
-	private static final Logger LOG = Logger.getLogger(DBManager.class);
+	private static final Logger LOG = Logger.getLogger(ConnectionPool.class);
 
 	// //////////////////////////////////////////////////////////
 	// singleton
 	// //////////////////////////////////////////////////////////
 
-	private static DBManager instance;
+	private static ConnectionPool instance;
 
-	public static synchronized DBManager getInstance() throws DBException {
+	public static synchronized ConnectionPool getInstance() throws DBException {
 		if (instance == null) {
-			instance = new DBManager();
+			instance = new ConnectionPool();
 		}
 		return instance;
 	}
 
-	private DBManager() throws DBException {
+	private ConnectionPool() throws DBException {
 		try {
 			Context initContext = new InitialContext();
 			Context envContext = (Context) initContext.lookup("java:/comp/env");
@@ -58,9 +58,18 @@ public final class DBManager {
 
 	public static final String SQL_FIND_USER_BY_LOGIN = "SELECT * FROM users WHERE login=?";
 
-	private static final String SQL_FIND_ALL_ORDERS = "SELECT * FROM orders";
-
 	public static final String SQL_FIND_USER_BY_ID = "SELECT * FROM users WHERE id=?";
+
+	public static final String SQL_FIND_PRODUCT_BY_ID = "SELECT * FROM products WHERE id=?";
+
+	public static final String SQL_FIND_PLAN_BY_ID = "SELECT pl.id id, pl.name name, pl.price price, pl.product_id product_id, pr.name product_name FROM plans pl, products pr WHERE pl.id=? AND pl.product_id = pr.id";
+
+	public static final String SQL_FIND_PAYMENT_BY_ID = "SELECT * FROM payments WHERE id=?";
+
+	public static final String SQL_FIND_ACCOUNT_BY_ID = "SELECT * FROM accounts WHERE id=?";
+
+	public static final String SQL_FIND_ACCOUNT_BY_USER_ID = "SELECT * FROM accounts WHERE user_id=?";
+
 
 	private static final String SQL_FIND_ALL_MENU_ITEMS = "SELECT * FROM menu";
 

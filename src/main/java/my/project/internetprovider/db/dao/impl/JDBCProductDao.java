@@ -1,8 +1,8 @@
 package my.project.internetprovider.db.dao.impl;
 
 import my.project.internetprovider.db.Fields;
-import my.project.internetprovider.db.dao.UserDao;
-import my.project.internetprovider.db.entity.User;
+import my.project.internetprovider.db.dao.ProductDao;
+import my.project.internetprovider.db.entity.Product;
 import my.project.internetprovider.exception.DataProcessingException;
 import my.project.internetprovider.exception.Messages;
 import my.project.internetprovider.util.ConnectionPool;
@@ -17,113 +17,79 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class JDBCUserDao implements UserDao {
-    private static final Logger LOG = Logger.getLogger(JDBCUserDao.class);
+public class JDBCProductDao implements ProductDao {
+    private static final Logger LOG = Logger.getLogger(JDBCProductDao.class);
 
     private Connection connection;
 
-    public JDBCUserDao(Connection connection) {
+    public JDBCProductDao(Connection connection) {
         this.connection = connection;
     }
 
-    private static User extractUser(ResultSet rs) throws SQLException {
-        User user = User.newBuilder()
+    private static Product extractProduct(ResultSet rs) throws SQLException {
+        Product product = Product.newBuilder()
                 .setId(rs.getLong(Fields.ENTITY_ID))
-                .setLogin(rs.getString(Fields.USER_LOGIN))
-                .setName(rs.getString(Fields.USER_NAME))
-                .setEmail(rs.getString(Fields.USER_EMAIL))
-                .setPassword(rs.getString(Fields.USER_PASSWORD))
-                .setSalt(rs.getBytes(Fields.USER_SALT))
-                .setRoleId(rs.getInt(Fields.USER_ROLE_ID))
+                .setName(rs.getString(Fields.PRODUCT_NAME))
                 .build();
 
-        return user;
+        return product;
     }
 
     @Override
-    public User create(User user) {
-        String query = "INSERT INTO users (name, email, login, password, salt, role_id) VALUES (?, ?, ?, ?, ?, ?)";
+    public Product create(Product product) {
+        String query = "INSERT INTO products (name) VALUES (?)";
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
         try {
             pstmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            int index = 0;
-            pstmt.setString(++index, user.getName());
-            pstmt.setString(++index, user.getEmail());
-            pstmt.setString(++index, user.getLogin());
-            pstmt.setString(++index, user.getPassword());
-            pstmt.setBytes(++index, user.getSalt());
-            pstmt.setInt(++index, user.getRoleId());
+            pstmt.setString(1, product.getName());
             pstmt.executeUpdate();
 
             rs = pstmt.getGeneratedKeys();
             if (rs.next()) {
-                Long userId = rs.getLong(1);
-                user.setId(userId);
+                Long productId = rs.getLong(1);
+                product.setId(productId);
             }
 
             connection.commit();
         } catch (SQLException e) {
             rollback(connection);
-            throw new DataProcessingException("User isn't created", e);
+            throw new DataProcessingException("Product " + product.getName() + " isn't created", e);
         } finally {
             close(connection, pstmt, rs);
         }
 
-        return user;
+        return product;
     }
 
     @Override
-    public Optional<User> findById(Long id) {
-        Optional<User> userOptional = Optional.empty();
+    public Optional<Product> findById(Long id) {
+        Optional<Product> productOptional = Optional.empty();
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(ConnectionPool.SQL_FIND_USER_BY_ID);
+            pstmt = connection.prepareStatement(ConnectionPool.SQL_FIND_PRODUCT_BY_ID);
             pstmt.setLong(1, id);
             rs = pstmt.executeQuery();
             if (rs.next()) {
-                User user = extractUser(rs);
-                userOptional = Optional.of(user);
+                Product product = extractProduct(rs);
+                productOptional = Optional.of(product);
             }
         } catch (SQLException ex) {
-            throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_USER_BY_ID, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_PRODUCT_BY_ID, ex);
         } finally {
             close(connection, pstmt, rs);
         }
 
-        return userOptional;
+        return productOptional;
     }
 
     @Override
-    public Optional<User> findByLogin(String login) {
-        Optional<User> userOptional = Optional.empty();
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-
-        try {
-            pstmt = connection.prepareStatement(ConnectionPool.SQL_FIND_USER_BY_LOGIN);
-            pstmt.setString(1, login);
-            rs = pstmt.executeQuery();
-            if (rs.next()) {
-                User user = extractUser(rs);
-                userOptional = Optional.of(user);
-            }
-        } catch (SQLException ex) {
-            throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_USER_BY_LOGIN, ex);
-        } finally {
-            close(connection, pstmt, rs);
-        }
-
-        return userOptional;
-    }
-
-    @Override
-    public List<User> findAll() {
-        List<User> list = new ArrayList<>();
-        String query = "SELECT * FROM users";
+    public List<Product> findAll() {
+        List<Product> list = new ArrayList<>();
+        String query = "SELECT * FROM products";
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
@@ -131,12 +97,12 @@ public class JDBCUserDao implements UserDao {
             pstmt = connection.prepareStatement(query);
             rs = pstmt.executeQuery();
             while (rs.next()) {
-                User user = extractUser(rs);
-                list.add(user);
+                Product product = extractProduct(rs);
+                list.add(product);
             }
         } catch (SQLException ex) {
             //throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_USER_BY_LOGIN, ex);
-            throw new DataProcessingException("Users aren't gotten", ex);
+            throw new DataProcessingException("Products aren't gotten", ex);
         } finally {
             close(connection, pstmt, rs);
         }
@@ -145,12 +111,8 @@ public class JDBCUserDao implements UserDao {
     }
 
     @Override
-    public void update(User user) {
-        String query = "UPDATE users SET name = ?, email = ?, password = ?, salt = ? WHERE id = ?";
-
-        boolean isStripQuery = user.getPassword() == null || user.getPassword().isEmpty();
-        if (isStripQuery)
-            query = "UPDATE users SET name = ?, email = ? WHERE id = ?";
+    public void update(Product product) {
+        String query = "UPDATE products SET name = ? WHERE id = ?";
 
         PreparedStatement pstmt = null;
         ResultSet rs = null;
@@ -158,21 +120,14 @@ public class JDBCUserDao implements UserDao {
         try {
             pstmt = connection.prepareStatement(query);
             int index = 0;
-            pstmt.setString(++index, user.getName());
-            pstmt.setString(++index, user.getEmail());
-
-            if (!isStripQuery) {
-                pstmt.setString(++index, user.getPassword());
-                pstmt.setBytes(++index, user.getSalt());
-            }
-
-            pstmt.setLong(++index, user.getId());
+            pstmt.setString(++index, product.getName());
+            pstmt.setLong(++index, product.getId());
             pstmt.executeUpdate();
 
             connection.commit();
         } catch (SQLException ex) {
             //LOGGER.info("The user " + id + " hasn't deleted");
-            throw new DataProcessingException("The user " + user.getId() + " wasn't updated", ex);
+            throw new DataProcessingException("The product " + product.getId() + " wasn't updated", ex);
         } finally {
             close(connection, pstmt, rs);
         }
@@ -180,7 +135,7 @@ public class JDBCUserDao implements UserDao {
 
     @Override
     public void delete(Long id) {
-        String query = "DELETE FROM users WHERE id = ?";
+        String query = "DELETE FROM products WHERE id = ?";
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
@@ -192,7 +147,7 @@ public class JDBCUserDao implements UserDao {
             connection.commit();
         } catch (SQLException ex) {
             //LOGGER.info("The user " + id + " hasn't deleted");
-            throw new DataProcessingException("The user " + id + " hasn't deleted", ex);
+            throw new DataProcessingException("The product " + id + " hasn't deleted", ex);
         } finally {
             close(connection, pstmt, rs);
         }

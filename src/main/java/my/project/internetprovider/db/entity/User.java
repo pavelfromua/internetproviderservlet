@@ -3,10 +3,8 @@ package my.project.internetprovider.db.entity;
 /**
  * User entity.
  *
- * @author D.Kolesnikov
- *
  */
-public class User extends Entity {
+public class User {
     private Long id;
 
     private String login;
@@ -29,12 +27,10 @@ public class User extends Entity {
 
     private int roleId;
 
-    @Override
     public Long getId() {
         return id;
     }
 
-    @Override
     public void setId(Long id) {
         this.id = id;
     }
@@ -119,6 +115,12 @@ public class User extends Entity {
 
         public Builder setPassword(String password) {
             User.this.password = password;
+
+            return this;
+        }
+
+        public Builder setSalt(byte[] salt) {
+            User.this.salt = salt;
 
             return this;
         }

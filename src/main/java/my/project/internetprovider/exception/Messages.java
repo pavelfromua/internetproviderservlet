@@ -34,6 +34,14 @@ public class Messages {
 
 	public static final String ERR_CANNOT_OBTAIN_USER_BY_ID = "Cannot obtain a user by its id";
 
+	public static final String ERR_CANNOT_OBTAIN_PRODUCT_BY_ID = "Cannot obtain a user by its id";
+
+	public static final String ERR_CANNOT_OBTAIN_ACCOUNT_BY_ID = "Cannot obtain an account by its id";
+
+	public static final String ERR_CANNOT_OBTAIN_PLAN_BY_ID = "Cannot obtain a plan by its id";
+
+	public static final String ERR_CANNOT_OBTAIN_PAYMENT_BY_ID = "Cannot obtain a payment by its id";
+
 	public static final String ERR_CANNOT_OBTAIN_USER_BY_LOGIN = "Cannot obtain a user by its login";
 
 	public static final String ERR_CANNOT_UPDATE_USER = "Cannot update a user";

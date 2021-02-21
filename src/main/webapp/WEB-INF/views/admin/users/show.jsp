@@ -47,72 +47,106 @@
                         <label for="email"><fmt:message key="show.user.email" /></label>
                         <input type="text" readonly class="form-control" value="${client.email}" id="email" name="email"/>
                     </div>
-                    <div class="form-group">
-                        <label for="password"><fmt:message key="show.user.password" /></label>
-                        <input type="text" readonly class="form-control" value="${client.password}" id="password" name="password"/>
-                    </div>
                     <button type="submit" class="btn btn-primary" value="signIn"><fmt:message key="show.user.edit" /></button>
                 </form>
             </div>
             <div class="tab-pane fade" id="v-pills-plans" role="tabpanel" aria-labelledby="v-pills-plans-tab">
-<%--                <div th:if="${user.account.active == false}" th:text="#{cabinet.account.status.message}" class="alert alert-info" role="alert" />--%>
-
-<%--                <ul class="list-group" th:each="product: ${products}">--%>
-<%--                    <li  class="list-group-item d-flex justify-content-between align-items-center">--%>
-<%--                        <span th:text="${product.description}" />--%>
-<%--                        <a th:href="@{/acc/plans/{uid}/{aid}/{pid}/{plid}(uid=${user.id},aid=${user.account.id},pid=${product.product.id},plid=${product.plan.id})}">--%>
-<%--                            <span th:if="${user.account.active == true}" th:text="|+|"  class="badge badge-primary badge-pill">+</span>--%>
-<%--                        </a>--%>
-<%--                    </li>--%>
-<%--                </ul>--%>
+                <c:if test="${account.active == false}">
+                    <div class="alert alert-info" role="alert">
+                        <fmt:message key="cabinet.account.status.message" />
+                    </div>
+                </c:if>
+                <ul class="list-group">
+                <c:forEach var="product" items="${products}">
+                    <li  class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>${product.description}</span>
+                        <a href="/admin/users/cab/assign?uid=${client.id}&aid=${account.id}&pid=${product.product.id}&plid=${product.plan.id}">
+                            <c:if test="${account.active == true}">
+                                <span class="badge badge-primary badge-pill">+</span>
+                            </c:if>
+                        </a>
+                    </li>
+                </c:forEach>
+                </ul>
             </div>
             <div class="tab-pane fade" id="v-pills-payments" role="tabpanel" aria-labelledby="v-pills-payments-tab">
-<%--                <div th:if="${user.account.active == false}" th:text="#{cabinet.account.status.message}" class="alert alert-info" role="alert" />--%>
-<%--                <table width="100%">--%>
-<%--                    <tr><td>--%>
-<%--                        <form th:method="POST" modelAttribute="dataform" th:action="@{/acc/pay}" class="form-inline">--%>
-<%--                            <div th:text="#{cabinet.menu.payments.menupay.label}" class="form-group mb-2">Amount to pay</div>--%>
-<%--                            <input type="hidden" id="uid" name="uid" th:value="${user.id}">--%>
-<%--                            <input type="hidden" id="aid" name="aid" th:value="${user.account.id}">--%>
-<%--                            <input type="number" name="amount" class="form-control" min="0" value="0" step="0.01">--%>
-<%--                            <button th:text="#{cabinet.menu.payments.menupay.btn}" type="submit" class="btn btn-primary mb-2">Pay</button>--%>
-<%--                        </form>--%>
-<%--                    </td></tr>--%>
-<%--                    <tr><td th:text="|#{cabinet.menu.payments.balance}: ${balance}|"></td></tr>--%>
-<%--                </table>--%>
+                <c:if test="${account.active == false}">
+                    <div class="alert alert-info" role="alert">
+                        <fmt:message key="cabinet.account.status.message" />
+                    </div>
+                </c:if>
+                <table width="100%">
+                    <tr><td>
+                        <form method="POST" action="/admin/users/cab/pay" class="form-inline">
+                            <div class="form-group mb-2" >
+                                <fmt:message key="cabinet.menu.payments.menupay.label" />
+                            </div>
+                            <input type="hidden" id="uid" name="uid" value="${client.id}">
+                            <input type="hidden" id="aid" name="aid" value="${account.id}">
+                            <div class="form-group mb-2" >
+                                <input type="number" name="amount" class="form-control" min="0.01" value="0" step="0.01">
+                            </div>
+                            <button type="submit" class="btn btn-primary mb-2" >
+                                <fmt:message key="cabinet.menu.payments.menupay.btn" />
+                            </button>
+                        </form>
+                    </td></tr>
+                    <tr><td><fmt:message key="cabinet.menu.payments.balance" />: ${balance}</td></tr>
+                </table>
                 <table class="table table-hover">
-<%--                <thead>--%>
-<%--                <tr>--%>
-<%--                    <th scope="col">#</th>--%>
-<%--                    <th th:text="#{cabinet.menu.payments.history.name}" scope="col" >Name</th>--%>
-<%--                    <th th:text="#{cabinet.menu.payments.history.amount}" scope="col" >Amount</th>--%>
-<%--                    <th th:text="#{cabinet.menu.payments.history.date}" scope="col" >Date</th>--%>
-<%--                </tr>--%>
-<%--                </thead>--%>
-<%--                <tbody>--%>
-<%--                <tr th:each="payment, custStat: ${payments}">--%>
-<%--                    <th scope="row" th:text="${custStat.count}">1</th>--%>
-<%--                    <td><p th:text="${payment.name}" /></td>--%>
-<%--                    <td><p th:text="${payment.amount}" /></td>--%>
-<%--                    <td><p th:text="${#temporals.format(payment.date, 'dd-MM-yyyy HH:mm')}" /></td>--%>
-<%--                </tr>--%>
-<%--                </tbody>--%>
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col" ><fmt:message key="cabinet.menu.payments.history.name" /></th>
+                    <th scope="col" ><fmt:message key="cabinet.menu.payments.history.amount" /></th>
+                    <th scope="col" ><fmt:message key="cabinet.menu.payments.history.date" /></th>
+                </tr>
+                </thead>
+                <tbody>
+                <c:forEach var="payment" items="${payments}" varStatus="custStat">
+                <tr>
+                    <th scope="row"><c:out value="${custStat.index + 1}"/></th>
+                    <td><c:out value="${payment.name}"/></td>
+                    <td><c:out value="${payment.amount}"/></td>
+                    <td><c:out value="${payment.date}"/></td>
+                </tr>
+                </c:forEach>
+                </tbody>
             </table>
             </div>
         <div class="tab-pane fade" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-settings-tab">
-<%--            <span th:if="${user.account.active == true}" th:text="#{cabinet.account.status.active}" class="badge badge-pill badge-success">Enabled</span>--%>
-<%--            <span th:if="${user.account.active == false}" th:text="#{cabinet.account.status.inactive}" class="badge badge-pill badge-danger">Disabled</span>--%>
-<%--            <form th:if="${user_role == 'ROLE_ADMIN'}" th:method="POST" modelAttribute="dataform" th:action="@{/acc/status}" class="form-inline">--%>
-<%--                <input type="hidden" name="uid" th:value="${user.id}">--%>
-<%--                <input type="hidden" name="aid" th:value="${user.account.id}">--%>
-<%--                <div class="form-check form-check-inline">--%>
-<%--                    <input th:checked="${user.account.active == true}" th:text="#{cabinet.menu.settings.activate}" class="form-check-input" type="radio" name="as" id="inlineRadio1" value=true>--%>
-<%--                </div>--%>
-<%--                <div class="form-check form-check-inline">--%>
-<%--                    <input th:checked="${user.account.active == false}" th:text="#{cabinet.menu.settings.deactivate}" class="form-check-input" type="radio" name="as" id="inlineRadio2" value=false>--%>
-<%--                </div>--%>
-<%--                <button th:text="#{cabinet.menu.settings.set}" type="submit" class="btn btn-primary mb-2">Set</button>--%>
-<%--            </form>--%>
+            <c:if test="${account.active == true}">
+                <span class="badge badge-pill badge-success"><fmt:message key="cabinet.account.status.active" /></span>
+            </c:if>
+            <c:if test="${account.active == false}">
+                <span class="badge badge-pill badge-danger"><fmt:message key="cabinet.account.status.inactive" /></span>
+            </c:if>
+
+            <form method="POST" action="/admin/users/cab/status" class="form-inline">
+                <input type="hidden" name="uid" value="${client.id}">
+                <input type="hidden" name="aid" value="${account.id}">
+                <div class="form-check form-check-inline">
+                    <c:choose>
+                        <c:when test="${account.active == true}">
+                            <input checked class="form-check-input" type="radio" name="as" id="inlineRadio1" value=true><fmt:message key="cabinet.menu.settings.activate" />
+                        </c:when>
+                        <c:otherwise>
+                            <input class="form-check-input" type="radio" name="as" id="inlineRadio1" value=true><fmt:message key="cabinet.menu.settings.activate" />
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+                <div class="form-check form-check-inline">
+                    <c:choose>
+                        <c:when test="${account.active == false}">
+                            <input checked class="form-check-input" type="radio" name="as" id="inlineRadio2" value=false><fmt:message key="cabinet.menu.settings.deactivate" />
+                        </c:when>
+                        <c:otherwise>
+                            <input class="form-check-input" type="radio" name="as" id="inlineRadio2" value=false><fmt:message key="cabinet.menu.settings.deactivate" />
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+                <button type="submit" class="btn btn-primary mb-2"><fmt:message key="cabinet.menu.settings.set" /></button>
+            </form>
         </div>
     </div>
 </div>

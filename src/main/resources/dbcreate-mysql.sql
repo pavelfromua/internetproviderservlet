@@ -11,7 +11,7 @@ USE internetprovider;
 CREATE TABLE roles(
 
 -- id has the INTEGER type (other name is INT), it is the primary key
-	id INTEGER NOT NULL PRIMARY KEY,
+	id BIGINT NOT NULL PRIMARY KEY,
 
 -- name has the VARCHAR type - a string with a variable length
 -- names values should not be repeated (UNIQUE)
@@ -33,7 +33,7 @@ INSERT INTO roles VALUES(2, 'guest');
 -- --------------------------------------------------------------
 CREATE TABLE users(
 
-	id INTEGER NOT NULL auto_increment PRIMARY KEY,
+	id BIGINT NOT NULL auto_increment PRIMARY KEY,
 	
 -- 'UNIQUE' means logins values should not be repeated in login column of table	
 	login VARCHAR(30) NOT NULL UNIQUE,
@@ -47,7 +47,7 @@ CREATE TABLE users(
 -- this declaration contains the foreign key constraint	
 -- role_id in users table is associated with id in roles table
 -- role_id of user = id of role
-	role_id INTEGER NOT NULL REFERENCES roles(id) 
+	role_id BIGINT NOT NULL REFERENCES roles(id)
 
 -- removing a row with some ID from roles table implies removing 
 -- all rows from users table for which ROLES_ID=ID
@@ -65,8 +65,63 @@ CREATE TABLE users(
 -- id = 2
 # INSERT INTO users VALUES(DEFAULT, 'client', 'client', 'Petr', 'Petrov', 1);
 
+CREATE TABLE products
+(
+    id BIGINT NOT NULL auto_increment PRIMARY KEY,
+    name VARCHAR(120) NOT NULL
+);
 
-	
+CREATE TABLE plans
+(
+    id BIGINT NOT NULL auto_increment PRIMARY KEY,
+    name VARCHAR(120) NOT NULL,
+    price DOUBLE NOT NULL,
+    product_id BIGINT,
+    CONSTRAINT FK_plans_products FOREIGN KEY (product_id)
+        REFERENCES products (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+
+CREATE TABLE accounts
+(
+    id BIGINT NOT NULL auto_increment PRIMARY KEY,
+    active BOOLEAN NOT NULL,
+    user_id BIGINT NOT NULL,
+    CONSTRAINT FK_accounts_users FOREIGN KEY (user_id)
+        REFERENCES users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+
+CREATE TABLE payments
+(
+    id BIGINT NOT NULL auto_increment PRIMARY KEY,
+    amount DOUBLE NOT NULL ,
+    date TIMESTAMP,
+    name VARCHAR(255),
+    account_id BIGINT NOT NULL ,
+    CONSTRAINT FK_payments_account FOREIGN KEY (account_id)
+        REFERENCES accounts (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+
+CREATE TABLE accounts_plans
+(
+    account_id bigint NOT NULL,
+    plans_id BIGINT NOT NULL,
+    CONSTRAINT accounts_plans_pkey PRIMARY KEY (account_id, plans_id),
+    CONSTRAINT FK_account_plans FOREIGN KEY (plans_id)
+        REFERENCES plans (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT FK_plans_account FOREIGN KEY (account_id)
+        REFERENCES accounts (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+
 -- --------------------------------------------------------------
 -- test database:
 -- --------------------------------------------------------------
