@@ -9,6 +9,7 @@ import my.project.internetprovider.service.impl.PlanServiceImpl;
 import my.project.internetprovider.service.impl.ProductServiceImpl;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 
 public class NewPlanCommand implements Command {
@@ -16,7 +17,7 @@ public class NewPlanCommand implements Command {
     private ProductService productService = new ProductServiceImpl();
 
     @Override
-    public String execute(HttpServletRequest request) {
+    public String execute(HttpServletRequest request, HttpServletResponse response) {
         String name = request.getParameter("name");
         String priceStr = request.getParameter("price");
         Double price = Double.valueOf(priceStr.isEmpty() ? "0" : priceStr);

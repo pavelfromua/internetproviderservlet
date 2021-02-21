@@ -5,12 +5,13 @@ import my.project.internetprovider.service.ProductService;
 import my.project.internetprovider.service.impl.ProductServiceImpl;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class UpdateProductCommand implements Command {
     private ProductService productService = new ProductServiceImpl();
 
     @Override
-    public String execute(HttpServletRequest request) {
+    public String execute(HttpServletRequest request, HttpServletResponse response) {
         Long productId = Long.valueOf(request.getParameter("productId"));
         String name = request.getParameter("name");
 

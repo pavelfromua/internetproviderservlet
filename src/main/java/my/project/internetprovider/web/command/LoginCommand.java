@@ -7,6 +7,7 @@ import my.project.internetprovider.service.UserService;
 import my.project.internetprovider.service.impl.UserServiceImpl;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 
@@ -14,7 +15,7 @@ public class LoginCommand implements Command {
     private UserService userService = new UserServiceImpl();
 
     @Override
-    public String execute(HttpServletRequest request) {
+    public String execute(HttpServletRequest request, HttpServletResponse response) {
         String login = request.getParameter("login");
         String password = request.getParameter("password");
 
@@ -25,7 +26,7 @@ public class LoginCommand implements Command {
 
             switch (Role.getRole(user)) {
                 case ADMIN: return "redirect:/admin";
-                case CLIENT: return "redirect:/client/" + user.getId();
+                case CLIENT: return "redirect:/client/cab";
                 default: return "/index.jsp";
 
             }

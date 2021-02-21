@@ -2,32 +2,30 @@ package my.project.internetprovider.web.command;
 
 import my.project.internetprovider.db.Role;
 import my.project.internetprovider.db.entity.User;
+import my.project.internetprovider.exception.NotFoundException;
 import my.project.internetprovider.service.AccountService;
+import my.project.internetprovider.service.UserService;
 import my.project.internetprovider.service.impl.AccountServiceImpl;
+import my.project.internetprovider.service.impl.UserServiceImpl;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.util.Map;
 
-public class PayCommand implements Command {
+public class ClientCabinetCommand implements Command {
+    private UserService userService = new UserServiceImpl();
     private AccountService accountService = new AccountServiceImpl();
 
     @Override
     public String execute(HttpServletRequest request, HttpServletResponse response) {
-        Long userId = Long.valueOf(request.getParameter("uid"));
-        Long accountId = Long.valueOf(request.getParameter("aid"));
-        Double amount = Double.valueOf(request.getParameter("amount"));
-
-        accountService.savePayment(accountId, amount);
-
-
         HttpSession session = request.getSession();
         User loggedUser = (User) session.getAttribute("user");
+        request.setAttribute("client", loggedUser);
 
-        switch (Role.getRole(loggedUser)) {
-            case ADMIN: return "redirect:/admin/users/cab?id=" + userId;
-            case CLIENT: return "redirect:/client/cab";
-            default: return "/index.jsp";
-        }
+        Map<String, ?> accountData = accountService.getDataForClientCabinet(loggedUser.getId());
+        accountData.entrySet().stream().forEach(e -> request.setAttribute(e.getKey(), e.getValue()));
+
+        return "/WEB-INF/views/client/users/show.jsp";
     }
 }

@@ -5,12 +5,13 @@ import my.project.internetprovider.service.PlanService;
 import my.project.internetprovider.service.impl.PlanServiceImpl;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class DeletePlanCommand implements Command {
     private PlanService planService = new PlanServiceImpl();
 
     @Override
-    public String execute(HttpServletRequest request) {
+    public String execute(HttpServletRequest request, HttpServletResponse response) {
         Long planId = Long.valueOf(request.getParameter("planId"));
         try {
             planService.delete(planId);

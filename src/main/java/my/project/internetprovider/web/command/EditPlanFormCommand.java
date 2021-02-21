@@ -8,13 +8,14 @@ import my.project.internetprovider.service.impl.PlanServiceImpl;
 import my.project.internetprovider.service.impl.ProductServiceImpl;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class EditPlanFormCommand implements Command {
     private PlanService planService = new PlanServiceImpl();
     private ProductService productService = new ProductServiceImpl();
 
     @Override
-    public String execute(HttpServletRequest request) {
+    public String execute(HttpServletRequest request, HttpServletResponse response) {
         Long planId = Long.valueOf(request.getParameter("id"));
         try {
             Plan plan = planService.findById(planId);

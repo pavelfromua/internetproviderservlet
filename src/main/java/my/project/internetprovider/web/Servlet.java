@@ -5,6 +5,7 @@ package my.project.internetprovider.web;
 import my.project.internetprovider.web.command.AdminCabinetCommand;
 import my.project.internetprovider.web.command.AssignPlanCommand;
 import my.project.internetprovider.web.command.AssignPlanFormCommand;
+import my.project.internetprovider.web.command.ClientCabinetCommand;
 import my.project.internetprovider.web.command.Command;
 import my.project.internetprovider.web.command.DeletePlanCommand;
 import my.project.internetprovider.web.command.DeleteProductCommand;
@@ -12,6 +13,7 @@ import my.project.internetprovider.web.command.DeleteUserCommand;
 import my.project.internetprovider.web.command.EditPlanFormCommand;
 import my.project.internetprovider.web.command.EditProductFormCommand;
 import my.project.internetprovider.web.command.ExceptionCommand;
+import my.project.internetprovider.web.command.IndexCommand;
 import my.project.internetprovider.web.command.LogOutCommand;
 import my.project.internetprovider.web.command.LoginCommand;
 import my.project.internetprovider.web.command.LoginFormCommand;
@@ -23,10 +25,12 @@ import my.project.internetprovider.web.command.NewUserCommand;
 import my.project.internetprovider.web.command.NewUserFormCommand;
 import my.project.internetprovider.web.command.PayCommand;
 import my.project.internetprovider.web.command.PlanListCommand;
+import my.project.internetprovider.web.command.PlanListExportPDFCommand;
 import my.project.internetprovider.web.command.ProductListCommand;
 import my.project.internetprovider.web.command.SetAccountStatusCommand;
 import my.project.internetprovider.web.command.ShowUserCommand;
 import my.project.internetprovider.web.command.EditUserFormCommand;
+import my.project.internetprovider.web.command.UpdateClientCommand;
 import my.project.internetprovider.web.command.UpdatePlanCommand;
 import my.project.internetprovider.web.command.UpdateProductCommand;
 import my.project.internetprovider.web.command.UpdateUserCommand;
@@ -50,7 +54,7 @@ public class Servlet extends HttpServlet {
         servletConfig.getServletContext()
                 .setAttribute("loggedUsers", new HashSet<String>());
 
-        commands.put("/logout", new LogOutCommand());
+        commands.put("post/logout", new LogOutCommand());
         commands.put("/login", new LoginFormCommand());
         commands.put("post/login", new LoginCommand());
 
@@ -82,6 +86,20 @@ public class Servlet extends HttpServlet {
         commands.put("post/admin/users/cab/status", new SetAccountStatusCommand());
         commands.put("post/admin/users/cab/pay", new PayCommand());
 
+        //client commands
+        commands.put("/client/cab", new ClientCabinetCommand());
+        commands.put("post/client/edit", new EditUserFormCommand());
+        commands.put("post/client/cab", new UpdateClientCommand());
+        commands.put("/client/cab/assign", new AssignPlanFormCommand());
+        commands.put("post/client/cab/assign", new AssignPlanCommand());
+        commands.put("post/client/cab/pay", new PayCommand());
+        commands.put("/client/plans", new PlanListCommand());
+
+        //common commands
+        commands.put("/", new IndexCommand());
+        commands.put("/plans", new PlanListCommand());
+        commands.put("/plans/export/pdf", new PlanListExportPDFCommand());
+
         commands.put("exception" , new ExceptionCommand());
     }
 
@@ -102,9 +120,9 @@ public class Servlet extends HttpServlet {
         String path = method + request.getRequestURI();
         //path = method + "/" + path.replaceAll(".*/" , "");
         Command command = commands.getOrDefault(path ,
-                (r)->"/index.jsp");
+                (req, resp)->"/index.jsp");
         System.out.println(command.getClass().getName());
-        String page = command.execute(request);
+        String page = command.execute(request, response);
         //request.getRequestDispatcher(page).forward(request,response);
         if(page.contains("redirect:")){
             response.sendRedirect(page.replace("redirect:", ""));

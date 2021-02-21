@@ -7,13 +7,15 @@
 <!DOCTYPE html>
 <html lang="${language}">
 <head>
-       <jsp:include page="WEB-INF/views/style.jsp"/>
+    <jsp:include page="${pageContext.request.contextPath}/WEB-INF/views/style.jsp"/>
 </head>
 <body>
-<jsp:include page="WEB-INF/views/head.jsp"/>
+<jsp:include page="${pageContext.request.contextPath}/WEB-INF/views/head.jsp"/>
+<jsp:include page="${pageContext.request.contextPath}/WEB-INF/views/client/menu.jsp"/>
 
-<jsp:include page="WEB-INF/views/menu.jsp"/>
-
-
+<div class="container" width="30%">
+    <div class="alert alert-info" role="alert"><fmt:message key="item.plan.msgNothingToAssign" /></div>
+    <a class="btn btn-primary" href="/client/cab" role="button"><fmt:message key="item.plan.noassign" /></a>
+</div>
 </body>
 </html>

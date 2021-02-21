@@ -9,12 +9,13 @@ import my.project.internetprovider.service.impl.ProductServiceImpl;
 import my.project.internetprovider.service.impl.UserServiceImpl;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class NewProductCommand implements Command {
     private ProductService productService = new ProductServiceImpl();
 
     @Override
-    public String execute(HttpServletRequest request) {
+    public String execute(HttpServletRequest request, HttpServletResponse response) {
         String name = request.getParameter("name");
 
         try {
