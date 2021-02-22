@@ -21,20 +21,21 @@ ${message}
 <tr>
     <th scope="col">#</th>
     <th scope="col">
-        <a href="/admin/plans?page=${currentPage}&?sf=product&sd=${rsd}">
+        <a href="/admin/plans/page?pn=${currentPage}&sf=product&sd=${rsd}">
             <fmt:message key="list.items.plans.product" />
         </a>
     </th>
     <th scope="col">
-        <a href="/admin/plans?page=${currentPage}&?sf=name&sd=${rsd}">
+        <a href="/admin/plans/page?pn=${currentPage}&sf=name&sd=${rsd}">
             <fmt:message key="list.items.plans.name" />
         </a>
     </th>
     <th scope="col">
-        <a href="/admin/plans?page=${currentPage}&?sf=price&sd=${rsd}">
+        <a href="/admin/plans/page?pn=${currentPage}&sf=price&sd=${rsd}">
             <fmt:message key="list.items.plans.price" />
         </a>
     </th>
+    <th scope="col"/>
 </tr>
 </thead>
 <tbody>
@@ -69,20 +70,50 @@ ${message}
         <td>
             <fmt:message key="pagination.items" /> | ${totalItems} - <fmt:message key="pagination.page" /> ${currentPage} <fmt:message key="pagination.of" /> ${totalPages} -
         </td>
-        <%--                <td>--%>
-        <%--                    <a th:if="${currentPage > 1}" th:text="#{pagination.first}" th:href="@{'/items/plans/page/1' + '?sf=' + ${sf} + '&sd=' + ${sd}}">First</a>--%>
-        <%--                    <span th:unless="${currentPage > 1}" th:text="#{pagination.first}">First</span>--%>
-        <%--                    <a th:if="${currentPage > 1}" th:text="#{pagination.previous}" th:href="@{'/items/plans/page/' + ${currentPage - 1} + '?sf=' + ${sf} + '&sd=' + ${sd}}">Previous</a>--%>
-        <%--                    <span th:unless="${currentPage > 1}" th:text="#{pagination.previous}">Previous</span>--%>
-        <%--                    <span th:each="i: ${#numbers.sequence(1, totalPages)}">--%>
-        <%--    <a th:if="${i != currentPage}" th:href="@{'/items/plans/page/' + ${i} + '?sf=' + ${sf} + '&sd=' + ${sd}}">[[${i}]]</a>--%>
-        <%--    <span th:unless="${i != currentPage}">[[${i}]]</span>--%>
-        <%--    </span>--%>
-        <%--                    <a th:if="${currentPage < totalPages}" th:text="#{pagination.next}" th:href="@{'/items/plans/page/' + ${currentPage + 1} + '?sf=' + ${sf} + '&sd=' + ${sd}}">Next</a>--%>
-        <%--                    <span th:unless="${currentPage < totalPages}" th:text="#{pagination.next}">Next</span>--%>
-        <%--                    <a th:if="${currentPage < totalPages}" th:text="#{pagination.last}" th:href="@{'/items/plans/page/' + ${totalPages} + '?sf=' + ${sf} + '&sd=' + ${sd}}">Last</a>--%>
-        <%--                    <span th:unless="${currentPage < totalPages}" th:text="#{pagination.last}">Last</span>--%>
-        <%--                </td>--%>
+        <td>
+            <c:choose>
+                <c:when test="${currentPage > 1}">
+                    <a href="/admin/plans/page?pn=1&sf=${sf}&sd=${sd}"><fmt:message key="pagination.first" /></a>
+                </c:when>
+                <c:otherwise>
+                    <span><fmt:message key="pagination.first" /></span>
+                </c:otherwise>
+            </c:choose>
+            <c:choose>
+                <c:when test="${currentPage > 1}">
+                    <a href="/admin/plans/page?pn=${currentPage - 1}&sf=${sf}&sd=${sd}"><fmt:message key="pagination.previous" /></a>
+                </c:when>
+                <c:otherwise>
+                    <span><fmt:message key="pagination.previous" /></span>
+                </c:otherwise>
+            </c:choose>
+            <c:forEach var="i" begin="1" end="${totalPages}">
+                <c:choose>
+                    <c:when test="${i != currentPage}">
+                        <a href="/admin/plans/page?pn=${i}&sf=${sf}&sd=${sd}">${i}</a>
+                    </c:when>
+                    <c:otherwise>
+                        <span>${i}</span>
+                    </c:otherwise>
+                </c:choose>
+            </c:forEach>
+            <c:choose>
+                <c:when test="${currentPage < totalPages}">
+                    <a href="/admin/plans/page?pn=${currentPage + 1}&sf=${sf}&sd=${sd}"><fmt:message key="pagination.next" /></a>
+                </c:when>
+                <c:otherwise>
+                    <span><fmt:message key="pagination.next" /></span>
+                </c:otherwise>
+            </c:choose>
+            <c:choose>
+                <c:when test="${currentPage < totalPages}">
+                    <a href="/admin/plans/page?pn=${totalPages}&sf=${sf}&sd=${sd}"><fmt:message key="pagination.last" /></a>
+                </c:when>
+                <c:otherwise>
+                    <span><fmt:message key="pagination.last" /></span>
+                </c:otherwise>
+            </c:choose>
+        </td>
     </tr>
 </table>
 

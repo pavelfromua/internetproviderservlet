@@ -90,7 +90,7 @@
     </init-param>
     <init-param>
       <param-name>out-of-control</param-name>
-      <param-value>/login / /plans /plans/export/pdf</param-value>
+      <param-value>/login / /plans /plans/export/pdf /plans/page</param-value>
     </init-param>
   </filter>
 

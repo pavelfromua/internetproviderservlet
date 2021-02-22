@@ -26,6 +26,7 @@ import my.project.internetprovider.web.command.NewUserFormCommand;
 import my.project.internetprovider.web.command.PayCommand;
 import my.project.internetprovider.web.command.PlanListCommand;
 import my.project.internetprovider.web.command.PlanListExportPDFCommand;
+import my.project.internetprovider.web.command.PlanPageCommand;
 import my.project.internetprovider.web.command.ProductListCommand;
 import my.project.internetprovider.web.command.SetAccountStatusCommand;
 import my.project.internetprovider.web.command.ShowUserCommand;
@@ -77,6 +78,7 @@ public class Servlet extends HttpServlet {
         commands.put("/admin/plans/new", new NewPlanFormCommand());
         commands.put("post/admin/plans/new", new NewPlanCommand());
         commands.put("/admin/plans", new PlanListCommand());
+        commands.put("/admin/plans/page", new PlanPageCommand());
         commands.put("/admin/plans/edit", new EditPlanFormCommand());
         commands.put("post/admin/plans", new UpdatePlanCommand());
         commands.put("post/admin/plans/delete", new DeletePlanCommand());
@@ -94,10 +96,12 @@ public class Servlet extends HttpServlet {
         commands.put("post/client/cab/assign", new AssignPlanCommand());
         commands.put("post/client/cab/pay", new PayCommand());
         commands.put("/client/plans", new PlanListCommand());
+        commands.put("/client/plans/page", new PlanPageCommand());
 
         //common commands
         commands.put("/", new IndexCommand());
         commands.put("/plans", new PlanListCommand());
+        commands.put("/plans/page", new PlanPageCommand());
         commands.put("/plans/export/pdf", new PlanListExportPDFCommand());
 
         commands.put("exception" , new ExceptionCommand());

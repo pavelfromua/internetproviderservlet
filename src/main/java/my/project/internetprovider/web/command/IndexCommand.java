@@ -6,6 +6,6 @@ import javax.servlet.http.HttpServletResponse;
 public class IndexCommand implements Command {
     @Override
     public String execute(HttpServletRequest request, HttpServletResponse response) {
-        return "redirect:/plans";
+        return "redirect:/plans/page?pn=1&sf=name&sd=asc";
     }
 }

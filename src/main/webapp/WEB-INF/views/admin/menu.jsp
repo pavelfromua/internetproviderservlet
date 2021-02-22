@@ -20,7 +20,7 @@
                     <a class="dropdown-item" href="/admin/plans/new"><fmt:message key="admin.nav.items.plans.new" /></a>
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="/admin/products"><fmt:message key="admin.nav.items.products.show" /></a>
-                    <a class="dropdown-item" href="/admin/plans"><fmt:message key="admin.nav.items.plans.show" /></a>
+                    <a class="dropdown-item" href="/admin/plans/page?pn=1&sf=name&sd=asc"><fmt:message key="admin.nav.items.plans.show" /></a>
                 </div>
             </li>
             <li class="nav-item dropdown">

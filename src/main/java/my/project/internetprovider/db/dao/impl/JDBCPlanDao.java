@@ -2,6 +2,7 @@ package my.project.internetprovider.db.dao.impl;
 
 import my.project.internetprovider.db.Fields;
 import my.project.internetprovider.db.dao.PlanDao;
+import my.project.internetprovider.db.entity.Page;
 import my.project.internetprovider.db.entity.Payment;
 import my.project.internetprovider.db.entity.Plan;
 import my.project.internetprovider.db.entity.Product;
@@ -99,7 +100,7 @@ public class JDBCPlanDao implements PlanDao {
     @Override
     public List<Plan> findAll() {
         List<Plan> list = new ArrayList<>();
-        String query = "SELECT pl.id id, pl.name name, pl.price price, pl.product_id product_id, pr.name product_name FROM plans pl, products pr WHERE pl.product_id = pr.id";
+        String query = "SELECT pl.id id, pl.name name, pl.price price, pl.product_id product_id, pr.name product FROM plans pl, products pr WHERE pl.product_id = pr.id";
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
@@ -168,7 +169,7 @@ public class JDBCPlanDao implements PlanDao {
     @Override
     public List<Plan> findAllByAccountId(Long accountId) {
         List<Plan> list = new ArrayList<>();
-        String query = "SELECT pl.id id, pl.name name, pl.price price, pl.product_id product_id, pr.name product_name FROM plans pl, products pr WHERE pl.product_id = pr.id AND pl.id IN (SELECT plans_id FROM accounts_plans WHERE account_id=?)";
+        String query = "SELECT pl.id id, pl.name name, pl.price price, pl.product_id product_id, pr.name product FROM plans pl, products pr WHERE pl.product_id = pr.id AND pl.id IN (SELECT plans_id FROM accounts_plans WHERE account_id=?)";
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
@@ -193,7 +194,7 @@ public class JDBCPlanDao implements PlanDao {
     @Override
     public List<Plan> findAllByProductId(Long productId) {
         List<Plan> list = new ArrayList<>();
-        String query = "SELECT pl.id id, pl.name name, pl.price price, pl.product_id product_id, pr.name product_name FROM plans pl, products pr WHERE pl.product_id=? AND pl.product_id = pr.id";
+        String query = "SELECT pl.id id, pl.name name, pl.price price, pl.product_id product_id, pr.name product FROM plans pl, products pr WHERE pl.product_id=? AND pl.product_id = pr.id";
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
@@ -213,6 +214,58 @@ public class JDBCPlanDao implements PlanDao {
         }
 
         return list;
+    }
+
+    @Override
+    public Page findAllForPage(int countPerPage, int pageNumber, String sortedField, String sortDirection) {
+        Page<Plan> page = new Page<>();
+        page.setCurrentPage(pageNumber);
+
+        int totalElements = 0;
+        List<Plan> list = new ArrayList<>();
+
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            pstmt = connection.prepareStatement("SELECT COUNT(id) num_rows FROM plans");
+            rs = pstmt.executeQuery();
+            if (rs.next()) {
+                totalElements = rs.getInt("num_rows");
+            }
+
+            page.setTotalElements(totalElements);
+
+            int totalPages = totalElements / countPerPage;
+
+            if (totalElements % countPerPage != 0)
+                totalPages++;
+
+            page.setTotalPages(totalPages);
+            int startElement = pageNumber * countPerPage - countPerPage;
+
+            pstmt = connection.prepareStatement("SELECT pl.id id, pl.name name, pl.price price, pl.product_id product_id, pr.name product " +
+                    "FROM plans pl, products pr WHERE pl.product_id = pr.id " +
+                    "ORDER BY " +sortedField + " " + sortDirection + " LIMIT ? OFFSET ?");
+
+            int index = 0;
+            pstmt.setInt(++index, countPerPage);
+            pstmt.setInt(++index, startElement);
+
+            rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Plan plan = extractPlan(rs);
+                list.add(plan);
+            }
+        } catch (SQLException ex) {
+            throw new DataProcessingException("Plans for page aren't gotten", ex);
+        } finally {
+            close(connection, pstmt, rs);
+        }
+
+        page.setElements(list);
+
+        return page;
     }
 
     @Override

@@ -12,7 +12,7 @@
     <div class="collapse navbar-collapse" id="cabinetNav">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item">
-                <a class="nav-link" href="/client/plans"><fmt:message key="cabinet.nav.items" /></a>
+                <a class="nav-link" href="/client/plans/page?pn=1&sf=name&sd=asc"><fmt:message key="cabinet.nav.items" /></a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="/client/cab"><fmt:message key="cabinet.nav.user" /></a>

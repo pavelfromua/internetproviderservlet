@@ -3,6 +3,7 @@ package my.project.internetprovider.service.impl;
 
 import my.project.internetprovider.db.dao.DaoFactory;
 import my.project.internetprovider.db.dao.PlanDao;
+import my.project.internetprovider.db.entity.Page;
 import my.project.internetprovider.db.entity.Payment;
 import my.project.internetprovider.db.entity.Plan;
 import my.project.internetprovider.exception.NotFoundException;
@@ -85,6 +86,13 @@ public class PlanServiceImpl implements PlanService {
     public List<Plan> findAllByAccountId(Long accountId) {
         try (PlanDao dao = daoFactory.createPlanDao()) {
             return dao.findAllByAccountId(accountId);
+        }
+    }
+
+    @Override
+    public Page<Plan> findAllForPage(int countPerPage, int currentPage, String sortedField, String sortDirection) {
+        try (PlanDao dao = daoFactory.createPlanDao()) {
+            return dao.findAllForPage(countPerPage, currentPage, sortedField, sortDirection);
         }
     }
 }

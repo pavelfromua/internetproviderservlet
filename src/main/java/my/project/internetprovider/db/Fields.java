@@ -23,7 +23,7 @@ public final class Fields {
 	public static final String PLAN_NAME = "name";
 	public static final String PLAN_PRICE = "price";
 	public static final String PLAN_PRODUCT_ID = "product_id";
-	public static final String PLAN_PRODUCT_NAME = "product_name";
+	public static final String PLAN_PRODUCT_NAME = "product";
 
 	public static final String PAYMENT_NAME = "name";
 	public static final String PAYMENT_AMOUNT = "amount";
