@@ -60,11 +60,6 @@ CREATE TABLE users(
 		ON UPDATE RESTRICT
 );
 
--- id = 1
-# INSERT INTO users VALUES(DEFAULT, 'admin', 'admin', 'Ivan', 'Ivanov', 0);
--- id = 2
-# INSERT INTO users VALUES(DEFAULT, 'client', 'client', 'Petr', 'Petrov', 1);
-
 CREATE TABLE products
 (
     id BIGINT NOT NULL auto_increment PRIMARY KEY,
@@ -121,9 +116,3 @@ CREATE TABLE accounts_plans
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
 );
-
--- --------------------------------------------------------------
--- test database:
--- --------------------------------------------------------------
-SELECT * FROM users;
-SELECT * FROM roles;

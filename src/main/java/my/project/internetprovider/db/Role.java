@@ -6,7 +6,7 @@ import my.project.internetprovider.db.entity.User;
 /**
  * Role entity.
  * 
- * @author D.Kolesnikov
+ *
  * 
  */
 

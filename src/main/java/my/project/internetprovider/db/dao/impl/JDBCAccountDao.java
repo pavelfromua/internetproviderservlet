@@ -9,6 +9,9 @@ import my.project.internetprovider.exception.DataProcessingException;
 import my.project.internetprovider.exception.Messages;
 import my.project.internetprovider.util.ConnectionPool;
 import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,9 +20,22 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 
 public class JDBCAccountDao implements AccountDao {
     private static final Logger LOG = Logger.getLogger(JDBCAccountDao.class);
+    private static final Properties query;
+
+    static {
+        query = new Properties();
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        InputStream stream = loader.getResourceAsStream("query.properties");
+        try {
+            query.load(stream);
+        } catch (IOException e) {
+            e.printStackTrace(); //TODO log in case of exception
+        }
+    }
 
     private Connection connection;
 
@@ -39,12 +55,11 @@ public class JDBCAccountDao implements AccountDao {
 
     @Override
     public Account create(Account account) {
-        String query = "INSERT INTO accounts (active, user_id) VALUES (?, ?)";
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            pstmt = connection.prepareStatement(query.getProperty("SQL_CREATE_ACCOUNT"), Statement.RETURN_GENERATED_KEYS);
             pstmt.setBoolean(1, account.isActive());
             pstmt.setLong(2, account.getUser());
             pstmt.executeUpdate();
@@ -73,7 +88,7 @@ public class JDBCAccountDao implements AccountDao {
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(ConnectionPool.SQL_FIND_ACCOUNT_BY_ID);
+            pstmt = connection.prepareStatement(query.getProperty("SQL_FIND_ACCOUNT_BY_ID"));
             pstmt.setLong(1, id);
             rs = pstmt.executeQuery();
             if (rs.next()) {
@@ -92,19 +107,17 @@ public class JDBCAccountDao implements AccountDao {
     @Override
     public List<Account> findAll() {
         List<Account> list = new ArrayList<>();
-        String query = "SELECT * FROM accounts";
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(query);
+            pstmt = connection.prepareStatement(query.getProperty("SQL_FIND_ALL_ACCOUNTS"));
             rs = pstmt.executeQuery();
             while (rs.next()) {
                 Account account = extractAccount(rs);
                 list.add(account);
             }
         } catch (SQLException ex) {
-            //throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_USER_BY_LOGIN, ex);
             throw new DataProcessingException("Accounts aren't gotten", ex);
         } finally {
             close(connection, pstmt, rs);
@@ -115,13 +128,11 @@ public class JDBCAccountDao implements AccountDao {
 
     @Override
     public void update(Account account) {
-        String query = "UPDATE accounts SET active = ? WHERE id = ?";
-
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(query);
+            pstmt = connection.prepareStatement(query.getProperty("SQL_UPDATE_ACCOUNT"));
             int index = 0;
             pstmt.setBoolean(++index, account.isActive());
             pstmt.setLong(++index, account.getId());
@@ -129,7 +140,6 @@ public class JDBCAccountDao implements AccountDao {
 
             connection.commit();
         } catch (SQLException ex) {
-            //LOGGER.info("The user " + id + " hasn't deleted");
             throw new DataProcessingException("The account " + account.getId() + " wasn't updated", ex);
         } finally {
             close(connection, pstmt, rs);
@@ -138,19 +148,17 @@ public class JDBCAccountDao implements AccountDao {
 
     @Override
     public void delete(Long id) {
-        String query = "DELETE FROM accounts WHERE id = ?";
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(query);
+            pstmt = connection.prepareStatement(query.getProperty("SQL_DELETE_ACCOUNT"));
             pstmt.setLong(1, id);
             pstmt.executeUpdate();
 
             connection.commit();
         } catch (SQLException ex) {
-            //LOGGER.info("The user " + id + " hasn't deleted");
-            throw new DataProcessingException("The account " + id + " hasn't deleted", ex);
+            throw new DataProcessingException("The account " + id + " wasn't deleted", ex);
         } finally {
             close(connection, pstmt, rs);
         }
@@ -163,7 +171,7 @@ public class JDBCAccountDao implements AccountDao {
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(ConnectionPool.SQL_FIND_ACCOUNT_BY_USER_ID);
+            pstmt = connection.prepareStatement(query.getProperty("SQL_FIND_ACCOUNT_BY_USER_ID"));
             pstmt.setLong(1, id);
             rs = pstmt.executeQuery();
             if (rs.next()) {
@@ -212,7 +220,6 @@ public class JDBCAccountDao implements AccountDao {
         }
     }
 
-
     /**
      * Closes resources.
      */
@@ -257,8 +264,6 @@ public class JDBCAccountDao implements AccountDao {
             }
         }
     }
-
-
 
     /**
      * Rollbacks a connection.

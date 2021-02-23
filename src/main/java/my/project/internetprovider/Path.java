@@ -3,7 +3,7 @@ package my.project.internetprovider;
 /**
  * Path holder (jsp pages, controller commands).
  * 
- * @author D.Kolesnikov
+ *
  * 
  */
 public final class Path {

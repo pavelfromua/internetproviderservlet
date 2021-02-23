@@ -8,6 +8,8 @@ import my.project.internetprovider.exception.Messages;
 import my.project.internetprovider.util.ConnectionPool;
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,9 +18,22 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 
 public class JDBCUserDao implements UserDao {
     private static final Logger LOG = Logger.getLogger(JDBCUserDao.class);
+    private static final Properties query;
+
+    static {
+        query = new Properties();
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        InputStream stream = loader.getResourceAsStream("query.properties");
+        try {
+            query.load(stream);
+        } catch (IOException e) {
+            e.printStackTrace(); //TODO log in case of exception
+        }
+    }
 
     private Connection connection;
 
@@ -42,12 +57,11 @@ public class JDBCUserDao implements UserDao {
 
     @Override
     public User create(User user) {
-        String query = "INSERT INTO users (name, email, login, password, salt, role_id) VALUES (?, ?, ?, ?, ?, ?)";
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            pstmt = connection.prepareStatement(query.getProperty("SQL_CREATE_USER"), Statement.RETURN_GENERATED_KEYS);
             int index = 0;
             pstmt.setString(++index, user.getName());
             pstmt.setString(++index, user.getEmail());
@@ -81,7 +95,7 @@ public class JDBCUserDao implements UserDao {
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(ConnectionPool.SQL_FIND_USER_BY_ID);
+            pstmt = connection.prepareStatement(query.getProperty("SQL_FIND_USER_BY_ID"));
             pstmt.setLong(1, id);
             rs = pstmt.executeQuery();
             if (rs.next()) {
@@ -104,7 +118,7 @@ public class JDBCUserDao implements UserDao {
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(ConnectionPool.SQL_FIND_USER_BY_LOGIN);
+            pstmt = connection.prepareStatement(query.getProperty("SQL_FIND_USER_BY_LOGIN"));
             pstmt.setString(1, login);
             rs = pstmt.executeQuery();
             if (rs.next()) {
@@ -123,19 +137,17 @@ public class JDBCUserDao implements UserDao {
     @Override
     public List<User> findAll() {
         List<User> list = new ArrayList<>();
-        String query = "SELECT * FROM users";
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(query);
+            pstmt = connection.prepareStatement(query.getProperty("SQL_FIND_ALL_USERS"));
             rs = pstmt.executeQuery();
             while (rs.next()) {
                 User user = extractUser(rs);
                 list.add(user);
             }
         } catch (SQLException ex) {
-            //throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_USER_BY_LOGIN, ex);
             throw new DataProcessingException("Users aren't gotten", ex);
         } finally {
             close(connection, pstmt, rs);
@@ -146,17 +158,17 @@ public class JDBCUserDao implements UserDao {
 
     @Override
     public void update(User user) {
-        String query = "UPDATE users SET name = ?, email = ?, password = ?, salt = ? WHERE id = ?";
+        String queryText = query.getProperty("SQL_UPDATE_USER");
 
         boolean isStripQuery = user.getPassword() == null || user.getPassword().isEmpty();
         if (isStripQuery)
-            query = "UPDATE users SET name = ?, email = ? WHERE id = ?";
+            queryText = query.getProperty("SQL_UPDATE_USER_STRIP");
 
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(query);
+            pstmt = connection.prepareStatement(queryText);
             int index = 0;
             pstmt.setString(++index, user.getName());
             pstmt.setString(++index, user.getEmail());
@@ -171,7 +183,6 @@ public class JDBCUserDao implements UserDao {
 
             connection.commit();
         } catch (SQLException ex) {
-            //LOGGER.info("The user " + id + " hasn't deleted");
             throw new DataProcessingException("The user " + user.getId() + " wasn't updated", ex);
         } finally {
             close(connection, pstmt, rs);
@@ -180,19 +191,17 @@ public class JDBCUserDao implements UserDao {
 
     @Override
     public void delete(Long id) {
-        String query = "DELETE FROM users WHERE id = ?";
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(query);
+            pstmt = connection.prepareStatement(query.getProperty("SQL_DELETE_USER"));
             pstmt.setLong(1, id);
             pstmt.executeUpdate();
 
             connection.commit();
         } catch (SQLException ex) {
-            //LOGGER.info("The user " + id + " hasn't deleted");
-            throw new DataProcessingException("The user " + id + " hasn't deleted", ex);
+            throw new DataProcessingException("The user " + id + " wasn't deleted", ex);
         } finally {
             close(connection, pstmt, rs);
         }
@@ -253,8 +262,6 @@ public class JDBCUserDao implements UserDao {
         }
     }
 
-
-
     /**
      * Rollbacks a connection.
      *
@@ -270,6 +277,4 @@ public class JDBCUserDao implements UserDao {
             }
         }
     }
-
-
 }

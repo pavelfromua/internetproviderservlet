@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8; " language="java" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="cust" uri="/WEB-INF/tld/customTags.tld" %>
 <c:set var="language" value="${not empty param.language ? param.language : not empty language ? language : pageContext.request.locale}" scope="session" />
 <fmt:setLocale value="${language}" />
 <fmt:setBundle basename="messages" />
@@ -108,7 +109,7 @@
                     <th scope="row"><c:out value="${custStat.index + 1}"/></th>
                     <td><c:out value="${payment.name}"/></td>
                     <td><c:out value="${payment.amount}"/></td>
-                    <td><c:out value="${payment.date}"/></td>
+                    <td><cust:dtf><c:out value="${payment.date}"/></cust:dtf></td>
                 </tr>
                 </c:forEach>
                 </tbody>

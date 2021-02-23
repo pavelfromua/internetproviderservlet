@@ -24,7 +24,7 @@ import java.util.StringTokenizer;
  * Security filter. Disabled by default. Uncomment Security filter
  * section in web.xml to enable.
  * 
- * @author D.Kolesnikov
+ *
  * 
  */
 public class CommandAccessFilter implements Filter {

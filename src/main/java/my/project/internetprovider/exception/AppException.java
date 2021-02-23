@@ -3,7 +3,7 @@ package my.project.internetprovider.exception;
 /**
  * An exception that provides information on an application error.
  * 
- * @author D.Kolesnikov
+ *
  * 
  */
 public class AppException extends Exception {

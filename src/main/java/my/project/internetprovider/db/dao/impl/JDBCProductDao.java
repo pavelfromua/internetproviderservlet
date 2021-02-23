@@ -8,6 +8,8 @@ import my.project.internetprovider.exception.Messages;
 import my.project.internetprovider.util.ConnectionPool;
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,9 +18,22 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 
 public class JDBCProductDao implements ProductDao {
     private static final Logger LOG = Logger.getLogger(JDBCProductDao.class);
+    private static final Properties query;
+
+    static {
+        query = new Properties();
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        InputStream stream = loader.getResourceAsStream("query.properties");
+        try {
+            query.load(stream);
+        } catch (IOException e) {
+            e.printStackTrace(); //TODO log in case of exception
+        }
+    }
 
     private Connection connection;
 
@@ -37,12 +52,11 @@ public class JDBCProductDao implements ProductDao {
 
     @Override
     public Product create(Product product) {
-        String query = "INSERT INTO products (name) VALUES (?)";
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            pstmt = connection.prepareStatement(query.getProperty("SQL_CREATE_PRODUCT"), Statement.RETURN_GENERATED_KEYS);
             pstmt.setString(1, product.getName());
             pstmt.executeUpdate();
 
@@ -70,7 +84,7 @@ public class JDBCProductDao implements ProductDao {
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(ConnectionPool.SQL_FIND_PRODUCT_BY_ID);
+            pstmt = connection.prepareStatement(query.getProperty("SQL_FIND_PRODUCT_BY_ID"));
             pstmt.setLong(1, id);
             rs = pstmt.executeQuery();
             if (rs.next()) {
@@ -89,19 +103,17 @@ public class JDBCProductDao implements ProductDao {
     @Override
     public List<Product> findAll() {
         List<Product> list = new ArrayList<>();
-        String query = "SELECT * FROM products";
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(query);
+            pstmt = connection.prepareStatement(query.getProperty("SQL_FIND_ALL_PRODUCTS"));
             rs = pstmt.executeQuery();
             while (rs.next()) {
                 Product product = extractProduct(rs);
                 list.add(product);
             }
         } catch (SQLException ex) {
-            //throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_USER_BY_LOGIN, ex);
             throw new DataProcessingException("Products aren't gotten", ex);
         } finally {
             close(connection, pstmt, rs);
@@ -112,13 +124,11 @@ public class JDBCProductDao implements ProductDao {
 
     @Override
     public void update(Product product) {
-        String query = "UPDATE products SET name = ? WHERE id = ?";
-
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(query);
+            pstmt = connection.prepareStatement(query.getProperty("SQL_UPDATE_PRODUCT"));
             int index = 0;
             pstmt.setString(++index, product.getName());
             pstmt.setLong(++index, product.getId());
@@ -126,7 +136,6 @@ public class JDBCProductDao implements ProductDao {
 
             connection.commit();
         } catch (SQLException ex) {
-            //LOGGER.info("The user " + id + " hasn't deleted");
             throw new DataProcessingException("The product " + product.getId() + " wasn't updated", ex);
         } finally {
             close(connection, pstmt, rs);
@@ -135,18 +144,16 @@ public class JDBCProductDao implements ProductDao {
 
     @Override
     public void delete(Long id) {
-        String query = "DELETE FROM products WHERE id = ?";
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(query);
+            pstmt = connection.prepareStatement(query.getProperty("SQL_DELETE_PRODUCT"));
             pstmt.setLong(1, id);
             pstmt.executeUpdate();
 
             connection.commit();
         } catch (SQLException ex) {
-            //LOGGER.info("The user " + id + " hasn't deleted");
             throw new DataProcessingException("The product " + id + " hasn't deleted", ex);
         } finally {
             close(connection, pstmt, rs);
@@ -161,7 +168,6 @@ public class JDBCProductDao implements ProductDao {
             throw new RuntimeException(e);
         }
     }
-
 
     /**
      * Closes resources.
@@ -208,8 +214,6 @@ public class JDBCProductDao implements ProductDao {
         }
     }
 
-
-
     /**
      * Rollbacks a connection.
      *
@@ -225,6 +229,4 @@ public class JDBCProductDao implements ProductDao {
             }
         }
     }
-
-
 }

@@ -9,6 +9,8 @@ import my.project.internetprovider.exception.Messages;
 import my.project.internetprovider.util.ConnectionPool;
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,9 +20,22 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 
 public class JDBCPaymentDao implements PaymentDao {
     private static final Logger LOG = Logger.getLogger(JDBCPaymentDao.class);
+    private static final Properties query;
+
+    static {
+        query = new Properties();
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        InputStream stream = loader.getResourceAsStream("query.properties");
+        try {
+            query.load(stream);
+        } catch (IOException e) {
+            e.printStackTrace(); //TODO log in case of exception
+        }
+    }
 
     private Connection connection;
 
@@ -42,12 +57,11 @@ public class JDBCPaymentDao implements PaymentDao {
 
     @Override
     public Payment create(Payment payment) {
-        String query = "INSERT INTO payments (name, amount, date, account_id) VALUES (?, ?, ?, ?)";
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            pstmt = connection.prepareStatement(query.getProperty("SQL_CREATE_PAYMENT"), Statement.RETURN_GENERATED_KEYS);
             int index = 0;
             pstmt.setString(++index, payment.getName());
             pstmt.setDouble(++index, payment.getAmount());
@@ -79,7 +93,7 @@ public class JDBCPaymentDao implements PaymentDao {
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(ConnectionPool.SQL_FIND_PAYMENT_BY_ID);
+            pstmt = connection.prepareStatement(query.getProperty("SQL_FIND_PAYMENT_BY_ID"));
             pstmt.setLong(1, id);
             rs = pstmt.executeQuery();
             if (rs.next()) {
@@ -98,19 +112,17 @@ public class JDBCPaymentDao implements PaymentDao {
     @Override
     public List<Payment> findAll() {
         List<Payment> list = new ArrayList<>();
-        String query = "SELECT * FROM payments";
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(query);
+            pstmt = connection.prepareStatement(query.getProperty("SQL_FIND_ALL_PAYMENTS"));
             rs = pstmt.executeQuery();
             while (rs.next()) {
                 Payment payment = extractPayment(rs);
                 list.add(payment);
             }
         } catch (SQLException ex) {
-            //throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_USER_BY_LOGIN, ex);
             throw new DataProcessingException("Payments aren't gotten", ex);
         } finally {
             close(connection, pstmt, rs);
@@ -121,13 +133,11 @@ public class JDBCPaymentDao implements PaymentDao {
 
     @Override
     public void update(Payment payment) {
-        String query = "UPDATE payments SET name = ?, amount = ?, date = ?, account_id = ? WHERE id = ?";
-
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(query);
+            pstmt = connection.prepareStatement(query.getProperty("SQL_UPDATE_PAYMENT"));
             int index = 0;
             pstmt.setString(++index, payment.getName());
             pstmt.setDouble(++index, payment.getAmount());
@@ -138,7 +148,6 @@ public class JDBCPaymentDao implements PaymentDao {
 
             connection.commit();
         } catch (SQLException ex) {
-            //LOGGER.info("The user " + id + " hasn't deleted");
             throw new DataProcessingException("The payment " + payment.getId() + " wasn't updated", ex);
         } finally {
             close(connection, pstmt, rs);
@@ -147,19 +156,17 @@ public class JDBCPaymentDao implements PaymentDao {
 
     @Override
     public void delete(Long id) {
-        String query = "DELETE FROM payments WHERE id = ?";
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(query);
+            pstmt = connection.prepareStatement(query.getProperty("SQL_DELETE_PAYMENT"));
             pstmt.setLong(1, id);
             pstmt.executeUpdate();
 
             connection.commit();
         } catch (SQLException ex) {
-            //LOGGER.info("The user " + id + " hasn't deleted");
-            throw new DataProcessingException("The payment " + id + " hasn't deleted", ex);
+            throw new DataProcessingException("The payment " + id + " wasn't deleted", ex);
         } finally {
             close(connection, pstmt, rs);
         }
@@ -168,12 +175,11 @@ public class JDBCPaymentDao implements PaymentDao {
     @Override
     public List<Payment> findAllByAccountId(Long accountId) {
         List<Payment> list = new ArrayList<>();
-        String query = "SELECT * FROM payments WHERE account_id=?";
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(query);
+            pstmt = connection.prepareStatement(query.getProperty("SQL_FIND_ALL_PAYMENTS_BY_ACCOUNT_ID"));
             pstmt.setLong(1, accountId);
             rs = pstmt.executeQuery();
             while (rs.next()) {
@@ -181,7 +187,6 @@ public class JDBCPaymentDao implements PaymentDao {
                 list.add(payment);
             }
         } catch (SQLException ex) {
-            //throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_USER_BY_LOGIN, ex);
             throw new DataProcessingException("Payments aren't gotten", ex);
         } finally {
             close(connection, pstmt, rs);
@@ -193,19 +198,17 @@ public class JDBCPaymentDao implements PaymentDao {
     @Override
     public Double getBalanceByAccountId(Long accountId) {
         Double balance = 0.0;
-        String query = "SELECT sum(amount) FROM payments WHERE account_id = ?";
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
         try {
-            pstmt = connection.prepareStatement(query);
+            pstmt = connection.prepareStatement(query.getProperty("SQL_GET_BALANCE_BY_ACCOUNT_ID"));
             pstmt.setLong(1, accountId);
             rs = pstmt.executeQuery();
             if (rs.next()) {
                 balance = rs.getDouble(1);
             }
         } catch (SQLException ex) {
-            //throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_USER_BY_LOGIN, ex);
             throw new DataProcessingException("Balance isn't gotten", ex);
         } finally {
             close(connection, pstmt, rs);
@@ -222,7 +225,6 @@ public class JDBCPaymentDao implements PaymentDao {
             throw new RuntimeException(e);
         }
     }
-
 
     /**
      * Closes resources.
@@ -269,8 +271,6 @@ public class JDBCPaymentDao implements PaymentDao {
         }
     }
 
-
-
     /**
      * Rollbacks a connection.
      *
@@ -286,6 +286,4 @@ public class JDBCPaymentDao implements PaymentDao {
             }
         }
     }
-
-
 }

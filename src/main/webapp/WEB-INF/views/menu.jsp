@@ -27,7 +27,7 @@
             </li>
             <li class="nav-item">
                 <fmt:message key="lang.ru" var="alt_ru" />
-                <a class="nav-link" href="/?language=ru"><img src="${pageContext.request.contextPath}/images/ru.png" alt="${alt_ru}"></a>
+                <a class="nav-link" href="/plans/page?language=ru"><img src="${pageContext.request.contextPath}/images/ru.png" alt="${alt_ru}"></a>
             </li>
             <li class="nav-item">
                 <fmt:message key="lang.ua" var="alt_ua" />

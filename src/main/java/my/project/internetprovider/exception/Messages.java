@@ -2,8 +2,7 @@ package my.project.internetprovider.exception;
 
 /**
  * Holder for messages of exceptions.
- * 
- * @author Dmytro_Kolesnikov
+ *
  *
  */
 public class Messages {
