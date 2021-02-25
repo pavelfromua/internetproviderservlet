@@ -8,7 +8,6 @@ import my.project.internetprovider.db.entity.Product;
 import my.project.internetprovider.exception.DataProcessingException;
 import my.project.internetprovider.exception.Messages;
 import org.apache.log4j.Logger;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -32,7 +31,7 @@ public class JDBCPlanDao implements PlanDao {
         try {
             query.load(stream);
         } catch (IOException e) {
-            e.printStackTrace(); //TODO log in case of exception
+            LOG.error(Messages.ERR_CANNOT_OBTAIN_QUERY_LIST);
         }
     }
 
@@ -42,6 +41,11 @@ public class JDBCPlanDao implements PlanDao {
         this.connection = connection;
     }
 
+    /**
+     * Returns plan's entity created by the result set data.
+     *
+     * @return Plan entity.
+     */
     private static Plan extractPlan(ResultSet rs) throws SQLException {
         Plan plan = Plan.newBuilder()
                 .setId(rs.getLong(Fields.ENTITY_ID))
@@ -56,6 +60,11 @@ public class JDBCPlanDao implements PlanDao {
         return plan;
     }
 
+    /**
+     * Returns newly created plan.
+     *
+     * @return Plan entity.
+     */
     @Override
     public Plan create(Plan plan) {
         PreparedStatement pstmt = null;
@@ -75,9 +84,10 @@ public class JDBCPlanDao implements PlanDao {
             }
 
             connection.commit();
-        } catch (SQLException e) {
+        } catch (SQLException ex) {
             rollback(connection);
-            throw new DataProcessingException("Plan isn't created", e);
+            LOG.error(Messages.ERR_CANNOT_CREATE_PLAN, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_CREATE_PLAN, ex);
         } finally {
             close(connection, pstmt, rs);
         }
@@ -85,6 +95,11 @@ public class JDBCPlanDao implements PlanDao {
         return plan;
     }
 
+    /**
+     * Returns plan obtained by its id.
+     *
+     * @return Plan entity like Optional.
+     */
     @Override
     public Optional<Plan> findById(Long id) {
         Optional<Plan> planOptional = Optional.empty();
@@ -99,7 +114,11 @@ public class JDBCPlanDao implements PlanDao {
                 Plan plan = extractPlan(rs);
                 planOptional = Optional.of(plan);
             }
+
+            connection.commit();
         } catch (SQLException ex) {
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_OBTAIN_PLAN_BY_ID, ex);
             throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_PLAN_BY_ID, ex);
         } finally {
             close(connection, pstmt, rs);
@@ -108,6 +127,11 @@ public class JDBCPlanDao implements PlanDao {
         return planOptional;
     }
 
+    /**
+     * Returns all plans.
+     *
+     * @return List of plan entities.
+     */
     @Override
     public List<Plan> findAll() {
         List<Plan> list = new ArrayList<>();
@@ -121,8 +145,12 @@ public class JDBCPlanDao implements PlanDao {
                 Plan plan = extractPlan(rs);
                 list.add(plan);
             }
+
+            connection.commit();
         } catch (SQLException ex) {
-            throw new DataProcessingException("Plans aren't gotten", ex);
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_OBTAIN_ALL_PLANS, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_ALL_PLANS, ex);
         } finally {
             close(connection, pstmt, rs);
         }
@@ -130,6 +158,11 @@ public class JDBCPlanDao implements PlanDao {
         return list;
     }
 
+    /**
+     * Updates plan in DB by the plan entity data.
+     *
+     * @return none.
+     */
     @Override
     public void update(Plan plan) {
         PreparedStatement pstmt = null;
@@ -146,12 +179,19 @@ public class JDBCPlanDao implements PlanDao {
 
             connection.commit();
         } catch (SQLException ex) {
-            throw new DataProcessingException("The plan " + plan.getId() + " wasn't updated", ex);
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_UPDATE_PLAN, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_UPDATE_PLAN, ex);
         } finally {
             close(connection, pstmt, rs);
         }
     }
 
+    /**
+     * Delete a plan from DB by its id.
+     *
+     * @return none.
+     */
     @Override
     public void delete(Long id) {
         PreparedStatement pstmt = null;
@@ -164,13 +204,19 @@ public class JDBCPlanDao implements PlanDao {
 
             connection.commit();
         } catch (SQLException ex) {
-            //LOGGER.info("The user " + id + " hasn't deleted");
-            throw new DataProcessingException("The plan " + id + " hasn't deleted", ex);
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_DELETE_PLAN, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_DELETE_PLAN, ex);
         } finally {
             close(connection, pstmt, rs);
         }
     }
 
+    /**
+     * Find all plans assigned to an account by its id.
+     *
+     * @return List of plan entities.
+     */
     @Override
     public List<Plan> findAllByAccountId(Long accountId) {
         List<Plan> list = new ArrayList<>();
@@ -185,8 +231,12 @@ public class JDBCPlanDao implements PlanDao {
                 Plan plan = extractPlan(rs);
                 list.add(plan);
             }
+
+            connection.commit();
         } catch (SQLException ex) {
-            throw new DataProcessingException("Plans aren't gotten", ex);
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_OBTAIN_ALL_PLANS_BY_ACCOUNT_ID, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_ALL_PLANS_BY_ACCOUNT_ID, ex);
         } finally {
             close(connection, pstmt, rs);
         }
@@ -194,6 +244,11 @@ public class JDBCPlanDao implements PlanDao {
         return list;
     }
 
+    /**
+     * Find all plans assigned to a product by its id.
+     *
+     * @return List of plan entities.
+     */
     @Override
     public List<Plan> findAllByProductId(Long productId) {
         List<Plan> list = new ArrayList<>();
@@ -208,8 +263,12 @@ public class JDBCPlanDao implements PlanDao {
                 Plan plan = extractPlan(rs);
                 list.add(plan);
             }
+
+            connection.commit();
         } catch (SQLException ex) {
-            throw new DataProcessingException("Plans aren't gotten", ex);
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_OBTAIN_ALL_PLANS_BY_PRODUCT_ID, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_ALL_PLANS_BY_PRODUCT_ID, ex);
         } finally {
             close(connection, pstmt, rs);
         }
@@ -217,6 +276,11 @@ public class JDBCPlanDao implements PlanDao {
         return list;
     }
 
+    /**
+     * Find all plans for a page when pagination is in use.
+     *
+     * @return List of plan entities.
+     */
     @Override
     public Page findAllForPage(int countPerPage, int pageNumber, String sortedField, String sortDirection) {
         Page<Plan> page = new Page<>();
@@ -258,8 +322,12 @@ public class JDBCPlanDao implements PlanDao {
                 Plan plan = extractPlan(rs);
                 list.add(plan);
             }
+
+            connection.commit();
         } catch (SQLException ex) {
-            throw new DataProcessingException("Plans for page aren't gotten", ex);
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_OBTAIN_ALL_PLANS_FOR_PAGE, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_ALL_PLANS_FOR_PAGE, ex);
         } finally {
             close(connection, pstmt, rs);
         }
@@ -269,6 +337,9 @@ public class JDBCPlanDao implements PlanDao {
         return page;
     }
 
+    /**
+     * Closes connection.
+     */
     @Override
     public void close()  {
         try {

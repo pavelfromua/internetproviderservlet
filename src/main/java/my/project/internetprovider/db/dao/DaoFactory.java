@@ -2,14 +2,16 @@ package my.project.internetprovider.db.dao;
 
 import my.project.internetprovider.db.dao.impl.JDBCDaoFactory;
 
+import java.sql.Connection;
+
 public abstract class DaoFactory {
     private static DaoFactory daoFactory;
 
-    public abstract UserDao createUserDao();
-    public abstract ProductDao createProductDao();
-    public abstract PlanDao createPlanDao();
-    public abstract AccountDao createAccountDao();
-    public abstract PaymentDao createPaymentDao();
+    public abstract UserDao createUserDao(boolean test);
+    public abstract ProductDao createProductDao(boolean test);
+    public abstract PlanDao createPlanDao(boolean test);
+    public abstract AccountDao createAccountDao(boolean test);
+    public abstract PaymentDao createPaymentDao(boolean test);
 
     public static DaoFactory getInstance(){
         if( daoFactory == null ){

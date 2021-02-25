@@ -5,9 +5,7 @@ import my.project.internetprovider.db.dao.ProductDao;
 import my.project.internetprovider.db.entity.Product;
 import my.project.internetprovider.exception.DataProcessingException;
 import my.project.internetprovider.exception.Messages;
-import my.project.internetprovider.util.ConnectionPool;
 import org.apache.log4j.Logger;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -31,7 +29,7 @@ public class JDBCProductDao implements ProductDao {
         try {
             query.load(stream);
         } catch (IOException e) {
-            e.printStackTrace(); //TODO log in case of exception
+            LOG.error(Messages.ERR_CANNOT_OBTAIN_QUERY_LIST);
         }
     }
 
@@ -41,6 +39,11 @@ public class JDBCProductDao implements ProductDao {
         this.connection = connection;
     }
 
+    /**
+     * Returns product's entity created by the result set data.
+     *
+     * @return Product entity.
+     */
     private static Product extractProduct(ResultSet rs) throws SQLException {
         Product product = Product.newBuilder()
                 .setId(rs.getLong(Fields.ENTITY_ID))
@@ -50,6 +53,11 @@ public class JDBCProductDao implements ProductDao {
         return product;
     }
 
+    /**
+     * Returns newly created product.
+     *
+     * @return Product entity.
+     */
     @Override
     public Product create(Product product) {
         PreparedStatement pstmt = null;
@@ -67,9 +75,10 @@ public class JDBCProductDao implements ProductDao {
             }
 
             connection.commit();
-        } catch (SQLException e) {
+        } catch (SQLException ex) {
             rollback(connection);
-            throw new DataProcessingException("Product " + product.getName() + " isn't created", e);
+            LOG.error(Messages.ERR_CANNOT_CREATE_PRODUCT, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_CREATE_PRODUCT, ex);
         } finally {
             close(connection, pstmt, rs);
         }
@@ -77,6 +86,11 @@ public class JDBCProductDao implements ProductDao {
         return product;
     }
 
+    /**
+     * Returns product obtained by its id.
+     *
+     * @return Product entity like Optional.
+     */
     @Override
     public Optional<Product> findById(Long id) {
         Optional<Product> productOptional = Optional.empty();
@@ -91,7 +105,11 @@ public class JDBCProductDao implements ProductDao {
                 Product product = extractProduct(rs);
                 productOptional = Optional.of(product);
             }
+
+            connection.commit();
         } catch (SQLException ex) {
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_OBTAIN_PRODUCT_BY_ID, ex);
             throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_PRODUCT_BY_ID, ex);
         } finally {
             close(connection, pstmt, rs);
@@ -100,6 +118,11 @@ public class JDBCProductDao implements ProductDao {
         return productOptional;
     }
 
+    /**
+     * Returns all products.
+     *
+     * @return List of product entities.
+     */
     @Override
     public List<Product> findAll() {
         List<Product> list = new ArrayList<>();
@@ -113,8 +136,12 @@ public class JDBCProductDao implements ProductDao {
                 Product product = extractProduct(rs);
                 list.add(product);
             }
+
+            connection.commit();
         } catch (SQLException ex) {
-            throw new DataProcessingException("Products aren't gotten", ex);
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_OBTAIN_ALL_PRODUCTS, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_ALL_PRODUCTS, ex);
         } finally {
             close(connection, pstmt, rs);
         }
@@ -122,6 +149,11 @@ public class JDBCProductDao implements ProductDao {
         return list;
     }
 
+    /**
+     * Updates product in DB by the product entity data.
+     *
+     * @return none.
+     */
     @Override
     public void update(Product product) {
         PreparedStatement pstmt = null;
@@ -136,12 +168,19 @@ public class JDBCProductDao implements ProductDao {
 
             connection.commit();
         } catch (SQLException ex) {
-            throw new DataProcessingException("The product " + product.getId() + " wasn't updated", ex);
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_UPDATE_PRODUCT, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_UPDATE_PRODUCT, ex);
         } finally {
             close(connection, pstmt, rs);
         }
     }
 
+    /**
+     * Delete a product from DB by its id.
+     *
+     * @return none.
+     */
     @Override
     public void delete(Long id) {
         PreparedStatement pstmt = null;
@@ -154,12 +193,17 @@ public class JDBCProductDao implements ProductDao {
 
             connection.commit();
         } catch (SQLException ex) {
-            throw new DataProcessingException("The product " + id + " hasn't deleted", ex);
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_DELETE_PRODUCT, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_DELETE_PRODUCT, ex);
         } finally {
             close(connection, pstmt, rs);
         }
     }
 
+    /**
+     * Closes connection.
+     */
     @Override
     public void close()  {
         try {

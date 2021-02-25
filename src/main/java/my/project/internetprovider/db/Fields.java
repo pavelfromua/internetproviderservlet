@@ -2,9 +2,7 @@ package my.project.internetprovider.db;
 
 /**
  * Holder for fields names of DB tables.
- * 
  *
- * 
  */
 public final class Fields {
 	// entities

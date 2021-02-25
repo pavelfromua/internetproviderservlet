@@ -3,12 +3,9 @@ package my.project.internetprovider.db.dao.impl;
 import my.project.internetprovider.db.Fields;
 import my.project.internetprovider.db.dao.PaymentDao;
 import my.project.internetprovider.db.entity.Payment;
-import my.project.internetprovider.db.entity.Product;
 import my.project.internetprovider.exception.DataProcessingException;
 import my.project.internetprovider.exception.Messages;
-import my.project.internetprovider.util.ConnectionPool;
 import org.apache.log4j.Logger;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -33,7 +30,7 @@ public class JDBCPaymentDao implements PaymentDao {
         try {
             query.load(stream);
         } catch (IOException e) {
-            e.printStackTrace(); //TODO log in case of exception
+            LOG.error(Messages.ERR_CANNOT_OBTAIN_QUERY_LIST);
         }
     }
 
@@ -43,6 +40,11 @@ public class JDBCPaymentDao implements PaymentDao {
         this.connection = connection;
     }
 
+    /**
+     * Returns payment's entity created by the result set data.
+     *
+     * @return Payment entity.
+     */
     private static Payment extractPayment(ResultSet rs) throws SQLException {
         Payment payment = Payment.newBuilder()
                 .setId(rs.getLong(Fields.ENTITY_ID))
@@ -55,6 +57,11 @@ public class JDBCPaymentDao implements PaymentDao {
         return payment;
     }
 
+    /**
+     * Returns newly created payment.
+     *
+     * @return Payment entity.
+     */
     @Override
     public Payment create(Payment payment) {
         PreparedStatement pstmt = null;
@@ -76,9 +83,10 @@ public class JDBCPaymentDao implements PaymentDao {
             }
 
             connection.commit();
-        } catch (SQLException e) {
+        } catch (SQLException ex) {
             rollback(connection);
-            throw new DataProcessingException("Payment " + payment.getName() + " isn't created", e);
+            LOG.error(Messages.ERR_CANNOT_CREATE_PAYMENT, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_CREATE_PAYMENT, ex);
         } finally {
             close(connection, pstmt, rs);
         }
@@ -86,6 +94,11 @@ public class JDBCPaymentDao implements PaymentDao {
         return payment;
     }
 
+    /**
+     * Returns payment obtained by its id.
+     *
+     * @return Payment entity like Optional.
+     */
     @Override
     public Optional<Payment> findById(Long id) {
         Optional<Payment> paymentOptional = Optional.empty();
@@ -100,7 +113,11 @@ public class JDBCPaymentDao implements PaymentDao {
                 Payment payment = extractPayment(rs);
                 paymentOptional = Optional.of(payment);
             }
+
+            connection.commit();
         } catch (SQLException ex) {
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_OBTAIN_PAYMENT_BY_ID, ex);
             throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_PAYMENT_BY_ID, ex);
         } finally {
             close(connection, pstmt, rs);
@@ -109,6 +126,11 @@ public class JDBCPaymentDao implements PaymentDao {
         return paymentOptional;
     }
 
+    /**
+     * Returns all payments.
+     *
+     * @return List of payment entities.
+     */
     @Override
     public List<Payment> findAll() {
         List<Payment> list = new ArrayList<>();
@@ -122,8 +144,12 @@ public class JDBCPaymentDao implements PaymentDao {
                 Payment payment = extractPayment(rs);
                 list.add(payment);
             }
+
+            connection.commit();
         } catch (SQLException ex) {
-            throw new DataProcessingException("Payments aren't gotten", ex);
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_OBTAIN_ALL_PAYMENTS, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_ALL_PAYMENTS, ex);
         } finally {
             close(connection, pstmt, rs);
         }
@@ -131,6 +157,11 @@ public class JDBCPaymentDao implements PaymentDao {
         return list;
     }
 
+    /**
+     * Updates payment in DB by the payment entity data.
+     *
+     * @return none.
+     */
     @Override
     public void update(Payment payment) {
         PreparedStatement pstmt = null;
@@ -148,12 +179,19 @@ public class JDBCPaymentDao implements PaymentDao {
 
             connection.commit();
         } catch (SQLException ex) {
-            throw new DataProcessingException("The payment " + payment.getId() + " wasn't updated", ex);
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_UPDATE_PAYMENT, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_UPDATE_PAYMENT, ex);
         } finally {
             close(connection, pstmt, rs);
         }
     }
 
+    /**
+     * Delete a plan from DB by its id.
+     *
+     * @return none.
+     */
     @Override
     public void delete(Long id) {
         PreparedStatement pstmt = null;
@@ -166,12 +204,19 @@ public class JDBCPaymentDao implements PaymentDao {
 
             connection.commit();
         } catch (SQLException ex) {
-            throw new DataProcessingException("The payment " + id + " wasn't deleted", ex);
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_DELETE_PAYMENT, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_DELETE_PAYMENT, ex);
         } finally {
             close(connection, pstmt, rs);
         }
     }
 
+    /**
+     * Find all payments assigned to the account.
+     *
+     * @return List of payment entities.
+     */
     @Override
     public List<Payment> findAllByAccountId(Long accountId) {
         List<Payment> list = new ArrayList<>();
@@ -186,8 +231,12 @@ public class JDBCPaymentDao implements PaymentDao {
                 Payment payment = extractPayment(rs);
                 list.add(payment);
             }
+
+            connection.commit();
         } catch (SQLException ex) {
-            throw new DataProcessingException("Payments aren't gotten", ex);
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_OBTAIN_ALL_PAYMENTS_BY_ACCOUNT_ID, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_ALL_PAYMENTS_BY_ACCOUNT_ID, ex);
         } finally {
             close(connection, pstmt, rs);
         }
@@ -195,6 +244,11 @@ public class JDBCPaymentDao implements PaymentDao {
         return list;
     }
 
+    /**
+     * Get balance by account id.
+     *
+     * @return Sum of balance.
+     */
     @Override
     public Double getBalanceByAccountId(Long accountId) {
         Double balance = 0.0;
@@ -208,8 +262,12 @@ public class JDBCPaymentDao implements PaymentDao {
             if (rs.next()) {
                 balance = rs.getDouble(1);
             }
+
+            connection.commit();
         } catch (SQLException ex) {
-            throw new DataProcessingException("Balance isn't gotten", ex);
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_OBTAIN_BALANCE_BY_ACCOUNT_ID, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_BALANCE_BY_ACCOUNT_ID, ex);
         } finally {
             close(connection, pstmt, rs);
         }
@@ -217,6 +275,9 @@ public class JDBCPaymentDao implements PaymentDao {
         return balance;
     }
 
+    /**
+     * Closes connection.
+     */
     @Override
     public void close()  {
         try {

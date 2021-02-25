@@ -4,7 +4,6 @@ import my.project.internetprovider.Path;
 import my.project.internetprovider.db.Role;
 import my.project.internetprovider.db.entity.User;
 import org.apache.log4j.Logger;
-
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -21,11 +20,8 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 /**
- * Security filter. Disabled by default. Uncomment Security filter
- * section in web.xml to enable.
- * 
+ * Security filter.
  *
- * 
  */
 public class CommandAccessFilter implements Filter {
 	
@@ -123,5 +119,4 @@ public class CommandAccessFilter implements Filter {
 		}
 		return list;		
 	}
-	
 }

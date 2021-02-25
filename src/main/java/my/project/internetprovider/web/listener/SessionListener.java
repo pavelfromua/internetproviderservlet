@@ -1,5 +1,7 @@
 package my.project.internetprovider.web.listener;
 
+import my.project.internetprovider.db.entity.User;
+
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 import java.util.HashSet;
@@ -8,7 +10,6 @@ import java.util.HashSet;
 public class SessionListener implements HttpSessionListener {
     @Override
     public void sessionCreated(HttpSessionEvent httpSessionEvent) {
-
     }
 
     @Override
@@ -16,9 +17,9 @@ public class SessionListener implements HttpSessionListener {
         HashSet<String> loggedUsers = (HashSet<String>) httpSessionEvent
                 .getSession().getServletContext()
                 .getAttribute("loggedUsers");
-        String userName = (String) httpSessionEvent.getSession()
-                .getAttribute("userName");
-        loggedUsers.remove(userName);
+        User user = (User) httpSessionEvent.getSession()
+                .getAttribute("user");
+        loggedUsers.remove(user.getLogin());
         httpSessionEvent.getSession().setAttribute("loggedUsers", loggedUsers);
     }
 }

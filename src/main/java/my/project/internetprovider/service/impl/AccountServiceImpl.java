@@ -27,17 +27,24 @@ import java.util.Map;
 import java.util.Optional;
 
 public class AccountServiceImpl implements AccountService {
+    private boolean testMode = false;
     private ProductService productService = new ProductServiceImpl();
     private PlanService planService = new PlanServiceImpl();
     private PaymentService paymentService = new PaymentServiceImpl();
 
     DaoFactory daoFactory = DaoFactory.getInstance();
 
+    public AccountServiceImpl() {}
+
+    public AccountServiceImpl(boolean testMode) {
+        this.testMode = testMode;
+    }
+
     @Override
     public List<Account> findAll() {
         List<Account> accounts;
 
-        try (AccountDao dao = daoFactory.createAccountDao()) {
+        try (AccountDao dao = daoFactory.createAccountDao(testMode)) {
             accounts = dao.findAll();
         }
 
@@ -46,14 +53,14 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Account create(Account account) throws ValidationException {
-        try (AccountDao dao = daoFactory.createAccountDao()) {
+        try (AccountDao dao = daoFactory.createAccountDao(testMode)) {
             return dao.create(account);
         }
     }
 
     @Override
     public Account findById(Long id) throws NotFoundException {
-        try (AccountDao dao = daoFactory.createAccountDao()) {
+        try (AccountDao dao = daoFactory.createAccountDao(testMode)) {
             Account account = dao.findById(id).orElseThrow(() ->
                     new NotFoundException("Account not found"));
 
@@ -63,21 +70,21 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public void update(Account account) throws UpdateException {
-        try (AccountDao dao = daoFactory.createAccountDao()) {
+        try (AccountDao dao = daoFactory.createAccountDao(testMode)) {
             dao.update(account);
         }
     }
 
     @Override
     public void delete(Long id) {
-        try (AccountDao dao = daoFactory.createAccountDao()) {
+        try (AccountDao dao = daoFactory.createAccountDao(testMode)) {
             dao.delete(id);
         }
     }
 
     @Override
     public Account findByUserId(Long id) throws NotFoundException {
-        try (AccountDao dao = daoFactory.createAccountDao()) {
+        try (AccountDao dao = daoFactory.createAccountDao(testMode)) {
             Account account = dao.findByUserId(id).orElseThrow(() ->
                     new NotFoundException("Account not found"));
 
@@ -126,13 +133,13 @@ public class AccountServiceImpl implements AccountService {
     }
 
     public List<Plan> findPlansByProductId(Long productId) {
-        try (PlanDao dao = daoFactory.createPlanDao()) {
+        try (PlanDao dao = daoFactory.createPlanDao(testMode)) {
             return dao.findAllByProductId(productId);
         }
     }
 
     public Double getBalanceByAccountId(Long accountId) {
-        try (PaymentDao dao = daoFactory.createPaymentDao()) {
+        try (PaymentDao dao = daoFactory.createPaymentDao(testMode)) {
             return dao.getBalanceByAccountId(accountId);
         }
     }
@@ -140,11 +147,11 @@ public class AccountServiceImpl implements AccountService {
     public void setAccountStatusByBalance(Long accountId) {
         Optional<Account> accountOptional = Optional.empty();
 
-        try (AccountDao dao = daoFactory.createAccountDao()) {
+        try (AccountDao dao = daoFactory.createAccountDao(testMode)) {
             accountOptional = dao.findById(accountId);
         }
 
-        try (AccountDao dao = daoFactory.createAccountDao()) {
+        try (AccountDao dao = daoFactory.createAccountDao(testMode)) {
             if (accountOptional.isPresent()) {
                 Account account = accountOptional.get();
                 if (account.isActive() && getBalanceByAccountId(accountId) <= 0) {
@@ -162,13 +169,13 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public void assignPlanToAccount(Long accountId, Long planId, Long productId) {
-        try (AccountDao dao = daoFactory.createAccountDao()) {
+        try (AccountDao dao = daoFactory.createAccountDao(testMode)) {
             dao.assignPlanToAccount(accountId, planId, productId);
         }
 
         try {
             Plan plan = planService.findById(planId);
-            try (PaymentDao dao = daoFactory.createPaymentDao()){
+            try (PaymentDao dao = daoFactory.createPaymentDao(testMode)){
                 dao.create(Payment.newBuilder()
                         .setAccount(accountId)
                         .setAmount(-plan.getPrice())
@@ -184,7 +191,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     public void savePayment(Long accountId, Double amount) {
-        try (PaymentDao dao = daoFactory.createPaymentDao()) {
+        try (PaymentDao dao = daoFactory.createPaymentDao(testMode)) {
             dao.create(Payment.newBuilder()
                     .setAccount(accountId)
                     .setAmount(amount)
@@ -197,7 +204,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     public void setStatus(Long accountId, Boolean status) {
-        try (AccountDao dao = daoFactory.createAccountDao()) {
+        try (AccountDao dao = daoFactory.createAccountDao(testMode)) {
             dao.update(Account.newBuilder()
                     .setId(accountId)
                     .setActive(status)

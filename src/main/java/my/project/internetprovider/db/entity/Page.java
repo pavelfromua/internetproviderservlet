@@ -2,6 +2,10 @@ package my.project.internetprovider.db.entity;
 
 import java.util.List;
 
+/**
+ * Page entity.
+ *
+ */
 public class Page<T> {
     private List<T> elements;
     private int totalElements;

@@ -1,15 +1,11 @@
 package my.project.internetprovider.db;
 
-
 import my.project.internetprovider.db.entity.User;
 
 /**
  * Role entity.
  * 
- *
- * 
  */
-
 public enum Role {
 	ADMIN, CLIENT, GUEST;
 	

@@ -14,13 +14,20 @@ import my.project.internetprovider.service.PlanService;
 import java.util.List;
 
 public class PlanServiceImpl implements PlanService {
+    private boolean testMode = false;
     DaoFactory daoFactory = DaoFactory.getInstance();
+
+    public PlanServiceImpl() {}
+
+    public PlanServiceImpl(boolean testMode) {
+        this.testMode = testMode;
+    }
 
     @Override
     public List<Plan> findAll() {
         List<Plan> plans;
 
-        try (PlanDao dao = daoFactory.createPlanDao()) {
+        try (PlanDao dao = daoFactory.createPlanDao(testMode)) {
             plans = dao.findAll();
         }
 
@@ -29,7 +36,7 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public Plan create(Plan plan) throws ValidationException {
-        try (PlanDao dao = daoFactory.createPlanDao()) {
+        try (PlanDao dao = daoFactory.createPlanDao(testMode)) {
             if (plan.getName().isEmpty()) {
                 throw new ValidationException("Name can't be empty");
             }
@@ -48,7 +55,7 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public Plan findById(Long id) throws NotFoundException {
-        try (PlanDao dao = daoFactory.createPlanDao()) {
+        try (PlanDao dao = daoFactory.createPlanDao(testMode)) {
             Plan plan = dao.findById(id).orElseThrow(() ->
                     new NotFoundException("Plan not found"));
 
@@ -58,7 +65,7 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public void update(Plan plan) throws UpdateException {
-        try (PlanDao dao = daoFactory.createPlanDao()) {
+        try (PlanDao dao = daoFactory.createPlanDao(testMode)) {
             if (plan.getName().isEmpty()) {
                 throw new UpdateException("Name can't be empty");
             }
@@ -77,21 +84,21 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public void delete(Long id) {
-        try (PlanDao dao = daoFactory.createPlanDao()) {
+        try (PlanDao dao = daoFactory.createPlanDao(testMode)) {
             dao.delete(id);
         }
     }
 
     @Override
     public List<Plan> findAllByAccountId(Long accountId) {
-        try (PlanDao dao = daoFactory.createPlanDao()) {
+        try (PlanDao dao = daoFactory.createPlanDao(testMode)) {
             return dao.findAllByAccountId(accountId);
         }
     }
 
     @Override
     public Page<Plan> findAllForPage(int countPerPage, int currentPage, String sortedField, String sortDirection) {
-        try (PlanDao dao = daoFactory.createPlanDao()) {
+        try (PlanDao dao = daoFactory.createPlanDao(testMode)) {
             return dao.findAllForPage(countPerPage, currentPage, sortedField, sortDirection);
         }
     }

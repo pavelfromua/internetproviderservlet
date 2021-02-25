@@ -5,10 +5,13 @@ import my.project.internetprovider.db.entity.User;
 import my.project.internetprovider.exception.AuthenticationException;
 import my.project.internetprovider.service.UserService;
 import my.project.internetprovider.service.impl.UserServiceImpl;
+import my.project.internetprovider.util.Language;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.util.HashSet;
+import java.util.ResourceBundle;
 
 
 public class LoginCommand implements Command {
@@ -19,10 +22,25 @@ public class LoginCommand implements Command {
         String login = request.getParameter("login");
         String password = request.getParameter("password");
 
+        HttpSession session = request.getSession();
+        HashSet<String> loggedUsers = (HashSet<String>) session
+                .getServletContext()
+                .getAttribute("loggedUsers");
+
+        ResourceBundle bundle = ResourceBundle.getBundle("messages",
+                Language.getLocale((String) session.getAttribute("language")));
+
+        if (loggedUsers.contains(login)) {
+            request.setAttribute("message", bundle.getString("alreadyLogged"));
+            return "/login.jsp";
+        }
+
         try {
             User user = userService.login(login, password);
-            HttpSession session = request.getSession();
+
             session.setAttribute("user", user);
+            loggedUsers.add(login);
+            session.setAttribute("loggedUsers", loggedUsers);
 
             switch (Role.getRole(user)) {
                 case ADMIN: return "redirect:/admin";

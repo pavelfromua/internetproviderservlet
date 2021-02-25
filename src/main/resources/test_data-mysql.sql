@@ -1,0 +1,12 @@
+INSERT INTO roles VALUES(0, 'admin');
+INSERT INTO roles VALUES(1, 'client');
+INSERT INTO roles VALUES(2, 'guest');
+INSERT INTO users (login, name, email, password, role_id, salt) VALUES('test_user', 'test testovich', 'test@gmail.com', '111', 1, 1);
+INSERT INTO users (login, name, email, password, role_id, salt) VALUES('test_user2', 'test testovich2', 'test2@gmail.com', '222', 1, 2);
+INSERT INTO products (name) VALUES('test_product1');
+INSERT INTO products (name) VALUES('test_product2');
+INSERT INTO plans (name, price, product_id) VALUES('test_plan1', 100.0, 1);
+INSERT INTO plans (name, price, product_id) VALUES('test_plan2', 200.0, 2);
+INSERT INTO accounts (active, user_id) VALUES (true, 1);
+INSERT INTO accounts (active, user_id) VALUES (true, 2);
+INSERT INTO accounts_plans (account_id, plans_id) VALUES (2, 2);

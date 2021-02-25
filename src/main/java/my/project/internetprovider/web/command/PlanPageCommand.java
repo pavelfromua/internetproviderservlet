@@ -15,22 +15,49 @@ import java.util.List;
 public class PlanPageCommand implements Command {
     private PlanService planService = new PlanServiceImpl();
 
-    @Override
-    public String execute(HttpServletRequest request, HttpServletResponse response) {
+    private void setLocale(HttpServletRequest request) {
         HttpSession session = request.getSession();
-        User loggedUser = (User) session.getAttribute("user");
 
+        String language = request.getParameter("language");
+        if (language == null)
+            session.setAttribute("language", "en");
+        else
+            session.setAttribute("language", language);
+    }
+
+    private int initCurrentPage(HttpServletRequest request) {
         int currentPage = Integer.valueOf(request.getParameter("pn"));
         if (currentPage <= 0)
             currentPage = 1;
 
+        return currentPage;
+    }
+
+    private String initSortedField(HttpServletRequest request) {
         String sf = request.getParameter("sf");
         if (sf.isEmpty())
             sf="name";
 
+        return sf;
+    }
+
+    private String initSortDirection(HttpServletRequest request) {
         String sd = request.getParameter("sd");
         if (sd.isEmpty())
             sd="asc";
+
+        return sd;
+    }
+
+    @Override
+    public String execute(HttpServletRequest request, HttpServletResponse response) {
+        setLocale(request);
+        int currentPage = initCurrentPage(request);
+        String sf = initSortedField(request);
+        String sd = initSortDirection(request);
+
+        HttpSession session = request.getSession();
+        User loggedUser = (User) session.getAttribute("user");
 
         Page<Plan> page = planService.findAllForPage(2, currentPage, sf, sd);
 

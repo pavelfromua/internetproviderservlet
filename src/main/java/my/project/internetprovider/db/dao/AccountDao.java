@@ -1,7 +1,6 @@
 package my.project.internetprovider.db.dao;
 
 import my.project.internetprovider.db.entity.Account;
-
 import java.util.Optional;
 
 public interface AccountDao extends GenericDao<Account> {

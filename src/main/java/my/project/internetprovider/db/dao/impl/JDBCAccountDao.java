@@ -3,13 +3,9 @@ package my.project.internetprovider.db.dao.impl;
 import my.project.internetprovider.db.Fields;
 import my.project.internetprovider.db.dao.AccountDao;
 import my.project.internetprovider.db.entity.Account;
-import my.project.internetprovider.db.entity.Payment;
-import my.project.internetprovider.db.entity.Plan;
 import my.project.internetprovider.exception.DataProcessingException;
 import my.project.internetprovider.exception.Messages;
-import my.project.internetprovider.util.ConnectionPool;
 import org.apache.log4j.Logger;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -33,7 +29,7 @@ public class JDBCAccountDao implements AccountDao {
         try {
             query.load(stream);
         } catch (IOException e) {
-            e.printStackTrace(); //TODO log in case of exception
+            LOG.error(Messages.ERR_CANNOT_OBTAIN_QUERY_LIST);
         }
     }
 
@@ -43,6 +39,11 @@ public class JDBCAccountDao implements AccountDao {
         this.connection = connection;
     }
 
+    /**
+     * Returns account's entity created by the result set data.
+     *
+     * @return Account entity.
+     */
     private static Account extractAccount(ResultSet rs) throws SQLException {
         Account account = Account.newBuilder()
                 .setId(rs.getLong(Fields.ENTITY_ID))
@@ -53,6 +54,11 @@ public class JDBCAccountDao implements AccountDao {
         return account;
     }
 
+    /**
+     * Returns newly created account.
+     *
+     * @return Account entity.
+     */
     @Override
     public Account create(Account account) {
         PreparedStatement pstmt = null;
@@ -71,9 +77,10 @@ public class JDBCAccountDao implements AccountDao {
             }
 
             connection.commit();
-        } catch (SQLException e) {
+        } catch (SQLException ex) {
             rollback(connection);
-            throw new DataProcessingException("Account for user " + account.getUser() + " isn't created", e);
+            LOG.error(Messages.ERR_CANNOT_CREATE_PLAN, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_CREATE_PLAN, ex);
         } finally {
             close(connection, pstmt, rs);
         }
@@ -81,6 +88,11 @@ public class JDBCAccountDao implements AccountDao {
         return account;
     }
 
+    /**
+     * Returns account obtained by its id.
+     *
+     * @return Account entity like Optional.
+     */
     @Override
     public Optional<Account> findById(Long id) {
         Optional<Account> accountOptional = Optional.empty();
@@ -95,7 +107,11 @@ public class JDBCAccountDao implements AccountDao {
                 Account account = extractAccount(rs);
                 accountOptional = Optional.of(account);
             }
+
+            connection.commit();
         } catch (SQLException ex) {
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_OBTAIN_ACCOUNT_BY_ID, ex);
             throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_ACCOUNT_BY_ID, ex);
         } finally {
             close(connection, pstmt, rs);
@@ -104,6 +120,11 @@ public class JDBCAccountDao implements AccountDao {
         return accountOptional;
     }
 
+    /**
+     * Returns all accounts.
+     *
+     * @return List of account entities.
+     */
     @Override
     public List<Account> findAll() {
         List<Account> list = new ArrayList<>();
@@ -117,8 +138,12 @@ public class JDBCAccountDao implements AccountDao {
                 Account account = extractAccount(rs);
                 list.add(account);
             }
+
+            connection.commit();
         } catch (SQLException ex) {
-            throw new DataProcessingException("Accounts aren't gotten", ex);
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_OBTAIN_ALL_ACCOUNTS, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_ALL_ACCOUNTS, ex);
         } finally {
             close(connection, pstmt, rs);
         }
@@ -126,6 +151,11 @@ public class JDBCAccountDao implements AccountDao {
         return list;
     }
 
+    /**
+     * Updates account in DB by the account entity data.
+     *
+     * @return none.
+     */
     @Override
     public void update(Account account) {
         PreparedStatement pstmt = null;
@@ -140,12 +170,19 @@ public class JDBCAccountDao implements AccountDao {
 
             connection.commit();
         } catch (SQLException ex) {
-            throw new DataProcessingException("The account " + account.getId() + " wasn't updated", ex);
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_UPDATE_ACCOUNT, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_UPDATE_ACCOUNT, ex);
         } finally {
             close(connection, pstmt, rs);
         }
     }
 
+    /**
+     * Delete an account from DB by its id.
+     *
+     * @return none.
+     */
     @Override
     public void delete(Long id) {
         PreparedStatement pstmt = null;
@@ -158,12 +195,19 @@ public class JDBCAccountDao implements AccountDao {
 
             connection.commit();
         } catch (SQLException ex) {
-            throw new DataProcessingException("The account " + id + " wasn't deleted", ex);
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_DELETE_ACCOUNT, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_DELETE_ACCOUNT, ex);
         } finally {
             close(connection, pstmt, rs);
         }
     }
 
+    /**
+     * Find an account by user id.
+     *
+     * @return Account entity like Optional.
+     */
     @Override
     public Optional<Account> findByUserId(Long id) {
         Optional<Account> accountOptional = Optional.empty();
@@ -178,8 +222,12 @@ public class JDBCAccountDao implements AccountDao {
                 Account account = extractAccount(rs);
                 accountOptional = Optional.of(account);
             }
+
+            connection.commit();
         } catch (SQLException ex) {
-            throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_ACCOUNT_BY_ID, ex);
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_OBTAIN_ACCOUNT_BY_USER_ID, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_ACCOUNT_BY_USER_ID, ex);
         } finally {
             close(connection, pstmt, rs);
         }
@@ -187,6 +235,11 @@ public class JDBCAccountDao implements AccountDao {
         return accountOptional;
     }
 
+    /**
+     * Assigns a plan to an account.
+     *
+     * @return none.
+     */
     @Override
     public void assignPlanToAccount(Long accountId, Long planId, Long productId) {
         PreparedStatement pstmt = null;
@@ -205,12 +258,17 @@ public class JDBCAccountDao implements AccountDao {
 
             connection.commit();
         } catch (SQLException ex) {
-            throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_ACCOUNT_BY_ID, ex);
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_ASSIGN_PLAN_TO_ACCOUNT, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_ASSIGN_PLAN_TO_ACCOUNT, ex);
         } finally {
             close(connection, pstmt, rs);
         }
     }
 
+    /**
+     * Closes connection.
+     */
     @Override
     public void close()  {
         try {

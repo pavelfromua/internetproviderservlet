@@ -13,13 +13,20 @@ import my.project.internetprovider.service.PaymentService;
 import java.util.List;
 
 public class PaymentServiceImpl implements PaymentService {
+    private boolean testMode = false;
     DaoFactory daoFactory = DaoFactory.getInstance();
+
+    public PaymentServiceImpl() {}
+
+    public PaymentServiceImpl(boolean testMode) {
+        this.testMode = testMode;
+    }
 
     @Override
     public List<Payment> findAll() {
         List<Payment> payments;
 
-        try (PaymentDao dao = daoFactory.createPaymentDao()) {
+        try (PaymentDao dao = daoFactory.createPaymentDao(testMode)) {
             payments = dao.findAll();
         }
 
@@ -28,14 +35,14 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public Payment create(Payment payment) throws ValidationException {
-        try (PaymentDao dao = daoFactory.createPaymentDao()) {
+        try (PaymentDao dao = daoFactory.createPaymentDao(testMode)) {
             return dao.create(payment);
         }
     }
 
     @Override
     public Payment findById(Long id) throws NotFoundException {
-        try (PaymentDao dao = daoFactory.createPaymentDao()) {
+        try (PaymentDao dao = daoFactory.createPaymentDao(testMode)) {
             Payment payment = dao.findById(id).orElseThrow(() ->
                     new NotFoundException("Payment not found"));
 
@@ -45,7 +52,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public void update(Payment payment) throws UpdateException {
-        try (PaymentDao dao = daoFactory.createPaymentDao()) {
+        try (PaymentDao dao = daoFactory.createPaymentDao(testMode)) {
             if (payment.getName().isEmpty()) {
                 throw new UpdateException("Name can't be empty");
             }
@@ -60,21 +67,21 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public void delete(Long id) {
-        try (PaymentDao dao = daoFactory.createPaymentDao()) {
+        try (PaymentDao dao = daoFactory.createPaymentDao(testMode)) {
             dao.delete(id);
         }
     }
 
     @Override
     public List<Payment> findAllByAccountId(Long accountId) {
-        try (PaymentDao dao = daoFactory.createPaymentDao()) {
+        try (PaymentDao dao = daoFactory.createPaymentDao(testMode)) {
             return dao.findAllByAccountId(accountId);
         }
     }
 
     @Override
     public Double getBalanceByAccountId(Long accountId) {
-        try (PaymentDao dao = daoFactory.createPaymentDao()) {
+        try (PaymentDao dao = daoFactory.createPaymentDao(testMode)) {
             return dao.getBalanceByAccountId(accountId);
         }
     }

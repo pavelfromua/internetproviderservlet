@@ -11,13 +11,20 @@ import my.project.internetprovider.service.ProductService;
 import java.util.List;
 
 public class ProductServiceImpl implements ProductService {
+    private boolean testMode = false;
     DaoFactory daoFactory = DaoFactory.getInstance();
+
+    public ProductServiceImpl() {}
+
+    public ProductServiceImpl(boolean testMode) {
+        this.testMode = testMode;
+    }
 
     @Override
     public List<Product> findAll() {
         List<Product> products;
 
-        try (ProductDao dao = daoFactory.createProductDao()) {
+        try (ProductDao dao = daoFactory.createProductDao(testMode)) {
             products = dao.findAll();
         }
 
@@ -26,14 +33,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product create(Product product) {
-        try (ProductDao dao = daoFactory.createProductDao()) {
+        try (ProductDao dao = daoFactory.createProductDao(testMode)) {
             return dao.create(product);
         }
     }
 
     @Override
     public Product findById(Long id) throws NotFoundException {
-        try (ProductDao dao = daoFactory.createProductDao()) {
+        try (ProductDao dao = daoFactory.createProductDao(testMode)) {
             Product product = dao.findById(id).orElseThrow(() ->
                     new NotFoundException("Product not found"));
 
@@ -43,7 +50,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void update(Product product) throws UpdateException {
-        try (ProductDao dao = daoFactory.createProductDao()) {
+        try (ProductDao dao = daoFactory.createProductDao(testMode)) {
             if (product.getName().isEmpty()) {
                 throw new UpdateException("Name can't be empty");
             }
@@ -53,7 +60,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void delete(Long id) {
-        try (ProductDao dao = daoFactory.createProductDao()) {
+        try (ProductDao dao = daoFactory.createProductDao(testMode)) {
             dao.delete(id);
         }
     }

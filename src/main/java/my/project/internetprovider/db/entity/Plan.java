@@ -1,5 +1,9 @@
 package my.project.internetprovider.db.entity;
 
+/**
+ * Plan entity.
+ *
+ */
 public class Plan {
     private Long id;
     private String name;

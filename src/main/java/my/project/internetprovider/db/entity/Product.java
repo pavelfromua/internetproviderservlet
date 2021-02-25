@@ -1,5 +1,9 @@
 package my.project.internetprovider.db.entity;
 
+/**
+ * Product entity.
+ *
+ */
 public class Product {
     private Long id;
     private String name;

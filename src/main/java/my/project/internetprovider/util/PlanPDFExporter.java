@@ -4,12 +4,15 @@ import com.lowagie.text.*;
 import com.lowagie.text.Font;
 import com.lowagie.text.pdf.*;
 import my.project.internetprovider.db.entity.Plan;
-
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Utility for creating a PDF file
+ *
+ */
 public class PlanPDFExporter {
     private List<Plan> listPlans;
 

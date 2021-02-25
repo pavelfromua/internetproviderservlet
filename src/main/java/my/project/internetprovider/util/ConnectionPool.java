@@ -3,7 +3,6 @@ package my.project.internetprovider.util;
 import my.project.internetprovider.exception.DBException;
 import my.project.internetprovider.exception.Messages;
 import org.apache.log4j.Logger;
-
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;

@@ -2,6 +2,10 @@ package my.project.internetprovider.db.entity;
 
 import java.util.Set;
 
+/**
+ * Account entity.
+ *
+ */
 public class Account {
     private Long id;
     private Long userId;

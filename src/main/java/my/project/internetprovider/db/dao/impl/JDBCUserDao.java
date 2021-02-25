@@ -5,9 +5,7 @@ import my.project.internetprovider.db.dao.UserDao;
 import my.project.internetprovider.db.entity.User;
 import my.project.internetprovider.exception.DataProcessingException;
 import my.project.internetprovider.exception.Messages;
-import my.project.internetprovider.util.ConnectionPool;
 import org.apache.log4j.Logger;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -31,7 +29,7 @@ public class JDBCUserDao implements UserDao {
         try {
             query.load(stream);
         } catch (IOException e) {
-            e.printStackTrace(); //TODO log in case of exception
+            LOG.error(Messages.ERR_CANNOT_OBTAIN_QUERY_LIST);
         }
     }
 
@@ -41,6 +39,11 @@ public class JDBCUserDao implements UserDao {
         this.connection = connection;
     }
 
+    /**
+     * Returns user's entity created by the result set data.
+     *
+     * @return User entity.
+     */
     private static User extractUser(ResultSet rs) throws SQLException {
         User user = User.newBuilder()
                 .setId(rs.getLong(Fields.ENTITY_ID))
@@ -55,6 +58,11 @@ public class JDBCUserDao implements UserDao {
         return user;
     }
 
+    /**
+     * Returns newly created user.
+     *
+     * @return User entity.
+     */
     @Override
     public User create(User user) {
         PreparedStatement pstmt = null;
@@ -78,9 +86,10 @@ public class JDBCUserDao implements UserDao {
             }
 
             connection.commit();
-        } catch (SQLException e) {
+        } catch (SQLException ex) {
             rollback(connection);
-            throw new DataProcessingException("User isn't created", e);
+            LOG.error(Messages.ERR_CANNOT_CREATE_USER, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_CREATE_USER, ex);
         } finally {
             close(connection, pstmt, rs);
         }
@@ -88,6 +97,11 @@ public class JDBCUserDao implements UserDao {
         return user;
     }
 
+    /**
+     * Returns user obtained by its id.
+     *
+     * @return User entity like Optional.
+     */
     @Override
     public Optional<User> findById(Long id) {
         Optional<User> userOptional = Optional.empty();
@@ -102,7 +116,11 @@ public class JDBCUserDao implements UserDao {
                 User user = extractUser(rs);
                 userOptional = Optional.of(user);
             }
+
+            connection.commit();
         } catch (SQLException ex) {
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_OBTAIN_USER_BY_ID, ex);
             throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_USER_BY_ID, ex);
         } finally {
             close(connection, pstmt, rs);
@@ -111,6 +129,11 @@ public class JDBCUserDao implements UserDao {
         return userOptional;
     }
 
+    /**
+     * Returns user obtained by its login.
+     *
+     * @return User entity like Optional.
+     */
     @Override
     public Optional<User> findByLogin(String login) {
         Optional<User> userOptional = Optional.empty();
@@ -125,7 +148,11 @@ public class JDBCUserDao implements UserDao {
                 User user = extractUser(rs);
                 userOptional = Optional.of(user);
             }
+
+            connection.commit();
         } catch (SQLException ex) {
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_OBTAIN_USER_BY_LOGIN, ex);
             throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_USER_BY_LOGIN, ex);
         } finally {
             close(connection, pstmt, rs);
@@ -134,6 +161,11 @@ public class JDBCUserDao implements UserDao {
         return userOptional;
     }
 
+    /**
+     * Returns all users.
+     *
+     * @return List of user entities.
+     */
     @Override
     public List<User> findAll() {
         List<User> list = new ArrayList<>();
@@ -147,8 +179,12 @@ public class JDBCUserDao implements UserDao {
                 User user = extractUser(rs);
                 list.add(user);
             }
+
+            connection.commit();
         } catch (SQLException ex) {
-            throw new DataProcessingException("Users aren't gotten", ex);
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_OBTAIN_ALL_USERS, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_OBTAIN_ALL_USERS, ex);
         } finally {
             close(connection, pstmt, rs);
         }
@@ -156,6 +192,11 @@ public class JDBCUserDao implements UserDao {
         return list;
     }
 
+    /**
+     * Updates user in DB by the user entity data.
+     *
+     * @return none.
+     */
     @Override
     public void update(User user) {
         String queryText = query.getProperty("SQL_UPDATE_USER");
@@ -183,12 +224,19 @@ public class JDBCUserDao implements UserDao {
 
             connection.commit();
         } catch (SQLException ex) {
-            throw new DataProcessingException("The user " + user.getId() + " wasn't updated", ex);
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_UPDATE_USER, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_UPDATE_USER, ex);
         } finally {
             close(connection, pstmt, rs);
         }
     }
 
+    /**
+     * Delete a user from DB by its id.
+     *
+     * @return none.
+     */
     @Override
     public void delete(Long id) {
         PreparedStatement pstmt = null;
@@ -201,18 +249,23 @@ public class JDBCUserDao implements UserDao {
 
             connection.commit();
         } catch (SQLException ex) {
-            throw new DataProcessingException("The user " + id + " wasn't deleted", ex);
+            rollback(connection);
+            LOG.error(Messages.ERR_CANNOT_DELETE_USER, ex);
+            throw new DataProcessingException(Messages.ERR_CANNOT_DELETE_USER, ex);
         } finally {
             close(connection, pstmt, rs);
         }
     }
 
+    /**
+     * Closes connection.
+     */
     @Override
     public void close()  {
         try {
             connection.close();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
         }
     }
 

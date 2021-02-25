@@ -1,8 +1,11 @@
 package my.project.internetprovider.db.entity;
 
-import java.sql.Date;
 import java.time.LocalDateTime;
 
+/**
+ * Payment entity.
+ *
+ */
 public class Payment {
     private Long id;
     private String name;

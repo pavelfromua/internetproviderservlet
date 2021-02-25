@@ -6,9 +6,7 @@ package my.project.internetprovider.exception;
  *
  * 
  */
-public class DBException extends AppException {
-
-	private static final long serialVersionUID = -3550446897536410392L;
+public class DBException extends Exception {
 
 	public DBException() {
 		super();

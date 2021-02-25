@@ -1,6 +1,5 @@
 package my.project.internetprovider.service.impl;
 
-
 import my.project.internetprovider.db.dao.AccountDao;
 import my.project.internetprovider.db.dao.DaoFactory;
 import my.project.internetprovider.db.dao.UserDao;
@@ -12,18 +11,24 @@ import my.project.internetprovider.exception.RegistrationException;
 import my.project.internetprovider.exception.UpdateException;
 import my.project.internetprovider.service.UserService;
 import my.project.internetprovider.util.HashUtil;
-
 import java.util.List;
 import java.util.Optional;
 
 public class UserServiceImpl implements UserService {
+    private boolean testMode = false;
     DaoFactory daoFactory = DaoFactory.getInstance();
+
+    public UserServiceImpl(){}
+
+    public UserServiceImpl(boolean testMode) {
+        this.testMode = testMode;
+    }
 
     @Override
     public List<User> findAll() {
         List<User> users;
 
-        try (UserDao dao = daoFactory.createUserDao()) {
+        try (UserDao dao = daoFactory.createUserDao(testMode)) {
             users = dao.findAll();
         }
 
@@ -35,11 +40,11 @@ public class UserServiceImpl implements UserService {
         user.setSalt(HashUtil.getSalt());
         user.setPassword(HashUtil.hashPassword(user.getPassword(), user.getSalt()));
 
-        try (UserDao dao = daoFactory.createUserDao()) {
+        try (UserDao dao = daoFactory.createUserDao(testMode)) {
             dao.create(user);
         }
 
-        try (AccountDao dao = daoFactory.createAccountDao()) {
+        try (AccountDao dao = daoFactory.createAccountDao(testMode)) {
             dao.create(Account.newBuilder()
                     .setActive(true)
                     .setUser(user.getId())
@@ -51,7 +56,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findById(Long id) throws NotFoundException {
-        try (UserDao dao = daoFactory.createUserDao()) {
+        try (UserDao dao = daoFactory.createUserDao(testMode)) {
             User user = dao.findById(id).orElseThrow(() ->
                     new NotFoundException("User not found"));
 
@@ -63,14 +68,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void update(User user) {
-        try (UserDao dao = daoFactory.createUserDao()) {
+        try (UserDao dao = daoFactory.createUserDao(testMode)) {
             dao.update(user);
         }
     }
 
     @Override
     public void delete(Long id) {
-        try (UserDao dao = daoFactory.createUserDao()) {
+        try (UserDao dao = daoFactory.createUserDao(testMode)) {
             dao.delete(id);
         }
     }
@@ -84,7 +89,7 @@ public class UserServiceImpl implements UserService {
     }
 
     public User login(String login, String password) throws AuthenticationException {
-        try (UserDao dao = daoFactory.createUserDao()) {
+        try (UserDao dao = daoFactory.createUserDao(testMode)) {
             User user = dao.findByLogin(login).orElseThrow(() ->
                     new AuthenticationException("Incorrect login or password"));
 
@@ -113,7 +118,7 @@ public class UserServiceImpl implements UserService {
             throw new RegistrationException("Password can't be empty");
         }
 
-        try (UserDao dao = daoFactory.createUserDao()) {
+        try (UserDao dao = daoFactory.createUserDao(testMode)) {
             Optional<User> userOptional = dao.findByLogin(login);
             if (userOptional.isPresent()) {
                 throw new RegistrationException("Login is already taken");

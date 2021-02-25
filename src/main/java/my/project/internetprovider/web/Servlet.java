@@ -111,7 +111,6 @@ public class Servlet extends HttpServlet {
                       HttpServletResponse response)
             throws IOException, ServletException {
         processRequest(request, response, "");
-        //response.getWriter().print("Hello from servlet");
     }
 
     public void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -122,12 +121,11 @@ public class Servlet extends HttpServlet {
     private void processRequest(HttpServletRequest request, HttpServletResponse response, String method)
             throws ServletException, IOException {
         String path = method + request.getRequestURI();
-        //path = method + "/" + path.replaceAll(".*/" , "");
         Command command = commands.getOrDefault(path ,
                 (req, resp)->"/index.jsp");
         System.out.println(command.getClass().getName());
         String page = command.execute(request, response);
-        //request.getRequestDispatcher(page).forward(request,response);
+
         if(page.contains("redirect:")){
             response.sendRedirect(page.replace("redirect:", ""));
         }else {

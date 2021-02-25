@@ -3,6 +3,11 @@ package my.project.internetprovider.db.entity.maps;
 import my.project.internetprovider.db.entity.Plan;
 import my.project.internetprovider.db.entity.Product;
 
+/**
+ * Entity for collection of assigned plans to the account.
+ *
+ *
+ */
 public class AccountProductPlanDto {
     private Product product;
     private Plan plan;
