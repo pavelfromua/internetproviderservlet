@@ -2,9 +2,7 @@ package my.project.internetprovider;
 
 import my.project.internetprovider.db.entity.Account;
 import my.project.internetprovider.db.entity.Plan;
-import my.project.internetprovider.exception.NotFoundException;
-import my.project.internetprovider.exception.UpdateException;
-import my.project.internetprovider.exception.ValidationException;
+import my.project.internetprovider.exception.CheckException;
 import my.project.internetprovider.service.AccountService;
 import my.project.internetprovider.service.impl.AccountServiceImpl;
 import my.project.internetprovider.util.ConnectionUtil;
@@ -68,7 +66,7 @@ public class AccountTest {
                     .setUser(1L)
                     .build());
             Assert.assertTrue(account.getId() != 0L);
-        } catch (ValidationException e) {
+        } catch (CheckException e) {
             e.printStackTrace();
         }
     }
@@ -86,7 +84,7 @@ public class AccountTest {
         Account account = null;
         try {
             account = accountService.findById(1L);
-        } catch (NotFoundException e) {
+        } catch (CheckException e) {
             e.printStackTrace();
         }
 
@@ -99,7 +97,7 @@ public class AccountTest {
         Account account = null;
         try {
             account = accountService.findByUserId(1L);
-        } catch (NotFoundException e) {
+        } catch (CheckException e) {
             e.printStackTrace();
         }
 
@@ -122,9 +120,7 @@ public class AccountTest {
             account.setActive(false);
             accountService.update(account);
             account = accountService.findById(1L);
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        } catch (UpdateException e) {
+        } catch (CheckException e) {
             e.printStackTrace();
         }
 
@@ -137,7 +133,7 @@ public class AccountTest {
         try {
             accountService.delete(1L);
             accountService.findById(1L);
-        } catch (NotFoundException e) {
+        } catch (CheckException e) {
             Assert.assertTrue(true);
         }
     }

@@ -1,9 +1,7 @@
 package my.project.internetprovider;
 
 import my.project.internetprovider.db.entity.Product;
-import my.project.internetprovider.exception.NotFoundException;
-import my.project.internetprovider.exception.UpdateException;
-import my.project.internetprovider.exception.ValidationException;
+import my.project.internetprovider.exception.CheckException;
 import my.project.internetprovider.service.PlanService;
 import my.project.internetprovider.service.ProductService;
 import my.project.internetprovider.service.impl.PlanServiceImpl;
@@ -68,7 +66,7 @@ public class ProductTest {
                     .setName("testproduct")
                     .build());
             Assert.assertTrue(product.getId() != 0L);
-        } catch (ValidationException e) {
+        } catch (CheckException e) {
             e.printStackTrace();
         }
     }
@@ -86,7 +84,7 @@ public class ProductTest {
         Product product = null;
         try {
             product = productService.findById(1L);
-        } catch (NotFoundException e) {
+        } catch (CheckException e) {
             e.printStackTrace();
         }
 
@@ -102,9 +100,7 @@ public class ProductTest {
             product.setName("updateproductname");
             productService.update(product);
             product = productService.findById(1L);
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        } catch (UpdateException e) {
+        } catch (CheckException e) {
             e.printStackTrace();
         }
 
@@ -121,7 +117,7 @@ public class ProductTest {
             planService.delete(1L);
             productService.delete(1L);
             product = productService.findById(1L);
-        } catch (NotFoundException e) {
+        } catch (CheckException e) {
             Assert.assertTrue(true);
         }
     }

@@ -9,14 +9,13 @@ import my.project.internetprovider.db.entity.Payment;
 import my.project.internetprovider.db.entity.Plan;
 import my.project.internetprovider.db.entity.Product;
 import my.project.internetprovider.db.entity.maps.AccountProductPlanDto;
-import my.project.internetprovider.exception.NotFoundException;
-import my.project.internetprovider.exception.UpdateException;
-import my.project.internetprovider.exception.ValidationException;
+import my.project.internetprovider.exception.Messages;
+import my.project.internetprovider.exception.CheckException;
 import my.project.internetprovider.service.AccountService;
 import my.project.internetprovider.service.PaymentService;
 import my.project.internetprovider.service.PlanService;
 import my.project.internetprovider.service.ProductService;
-
+import org.apache.log4j.Logger;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,6 +27,9 @@ import java.util.Optional;
 
 public class AccountServiceImpl implements AccountService {
     private boolean testMode = false;
+
+    private static final Logger LOG = Logger.getLogger(AccountServiceImpl.class);
+
     private ProductService productService = new ProductServiceImpl();
     private PlanService planService = new PlanServiceImpl();
     private PaymentService paymentService = new PaymentServiceImpl();
@@ -52,24 +54,24 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Account create(Account account) throws ValidationException {
+    public Account create(Account account) throws CheckException {
         try (AccountDao dao = daoFactory.createAccountDao(testMode)) {
             return dao.create(account);
         }
     }
 
     @Override
-    public Account findById(Long id) throws NotFoundException {
+    public Account findById(Long id) throws CheckException {
         try (AccountDao dao = daoFactory.createAccountDao(testMode)) {
             Account account = dao.findById(id).orElseThrow(() ->
-                    new NotFoundException("Account not found"));
+                    new CheckException("accountNotFound"));
 
             return account;
         }
     }
 
     @Override
-    public void update(Account account) throws UpdateException {
+    public void update(Account account) {
         try (AccountDao dao = daoFactory.createAccountDao(testMode)) {
             dao.update(account);
         }
@@ -83,10 +85,10 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Account findByUserId(Long id) throws NotFoundException {
+    public Account findByUserId(Long id) throws CheckException {
         try (AccountDao dao = daoFactory.createAccountDao(testMode)) {
             Account account = dao.findByUserId(id).orElseThrow(() ->
-                    new NotFoundException("Account not found"));
+                    new CheckException("accountNotFound"));
 
             return account;
         }
@@ -99,8 +101,8 @@ public class AccountServiceImpl implements AccountService {
         Account account = null;
         try {
             account = findByUserId(userId);
-        } catch (NotFoundException e) {
-            e.printStackTrace(); //TODO обработать позже
+        } catch (CheckException e) {
+            LOG.error(Messages.ERR_CANNOT_OBTAIN_ACCOUNT_BY_USER_ID);
         }
 
         List<Product> products = productService.findAll();
@@ -185,8 +187,8 @@ public class AccountServiceImpl implements AccountService {
 
                 setAccountStatusByBalance(accountId);
             }
-        } catch (NotFoundException e) {
-            e.printStackTrace(); //TODO action in case of exception
+        } catch (CheckException e) {
+            LOG.error(Messages.ERR_CANNOT_ASSIGN_PLAN_TO_ACCOUNT);
         }
     }
 

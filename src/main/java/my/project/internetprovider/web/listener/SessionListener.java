@@ -1,11 +1,9 @@
 package my.project.internetprovider.web.listener;
 
 import my.project.internetprovider.db.entity.User;
-
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 import java.util.HashSet;
-
 
 public class SessionListener implements HttpSessionListener {
     @Override

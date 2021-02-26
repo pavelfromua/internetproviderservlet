@@ -1,6 +1,5 @@
 package my.project.internetprovider.web.filter;
 
-import my.project.internetprovider.Path;
 import my.project.internetprovider.db.Role;
 import my.project.internetprovider.db.entity.User;
 import org.apache.log4j.Logger;
@@ -50,7 +49,7 @@ public class CommandAccessFilter implements Filter {
 			request.setAttribute("errorMessage", errorMessasge);
 			LOG.trace("Set the request attribute: errorMessage --> " + errorMessasge);
 			
-			request.getRequestDispatcher(Path.PAGE_ERROR_PAGE)
+			request.getRequestDispatcher("/WEB-INF/views/error_page.jsp")
 					.forward(request, response);
 		}
 	}

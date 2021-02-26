@@ -11,7 +11,7 @@
 </head>
 <body>
 <jsp:include page="${pageContext.request.contextPath}/WEB-INF/views/head.jsp"/>
-<%--<jsp:include page="${pageContext.request.contextPath}/WEB-INF/views/menu.jsp"/>--%>
+
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -20,7 +20,7 @@
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
             <li class="nav-item">
-                <a class="nav-link" href="/plans"><fmt:message key="main.nav.items" /></a>
+                <a class="nav-link" href="/plans/page"><fmt:message key="main.nav.items" /></a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="${pageContext.request.contextPath}/login"><fmt:message key="main.nav.cabinet" /></a>

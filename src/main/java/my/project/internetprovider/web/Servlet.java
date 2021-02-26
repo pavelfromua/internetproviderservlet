@@ -1,7 +1,5 @@
 package my.project.internetprovider.web;
 
-
-
 import my.project.internetprovider.web.command.AdminCabinetCommand;
 import my.project.internetprovider.web.command.AssignPlanCommand;
 import my.project.internetprovider.web.command.AssignPlanFormCommand;
@@ -36,7 +34,6 @@ import my.project.internetprovider.web.command.UpdatePlanCommand;
 import my.project.internetprovider.web.command.UpdateProductCommand;
 import my.project.internetprovider.web.command.UpdateUserCommand;
 import my.project.internetprovider.web.command.UserListCommand;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -123,7 +120,7 @@ public class Servlet extends HttpServlet {
         String path = method + request.getRequestURI();
         Command command = commands.getOrDefault(path ,
                 (req, resp)->"/index.jsp");
-        System.out.println(command.getClass().getName());
+
         String page = command.execute(request, response);
 
         if(page.contains("redirect:")){

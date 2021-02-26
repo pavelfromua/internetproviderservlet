@@ -1,12 +1,11 @@
 package my.project.internetprovider.web.command;
 
 import my.project.internetprovider.db.entity.Plan;
-import my.project.internetprovider.exception.NotFoundException;
+import my.project.internetprovider.exception.CheckException;
 import my.project.internetprovider.service.PlanService;
 import my.project.internetprovider.service.ProductService;
 import my.project.internetprovider.service.impl.PlanServiceImpl;
 import my.project.internetprovider.service.impl.ProductServiceImpl;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -23,7 +22,7 @@ public class EditPlanFormCommand implements Command {
             request.setAttribute("productList", productService.findAll());
 
             return "/WEB-INF/views/admin/plans/edit.jsp";
-        } catch (NotFoundException e) {
+        } catch (CheckException e) {
             request.setAttribute("message", e.getMessage());
             return "redirect:/admin/plans";
         }

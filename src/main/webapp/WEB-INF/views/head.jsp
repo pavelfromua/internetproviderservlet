@@ -4,7 +4,7 @@
 <fmt:setBundle basename="messages" />
 
 <nav class="navbar navbar-light bg-light">
-    <a class="navbar-brand" href="">
+    <a class="navbar-brand" href="/">
         <img src="${pageContext.request.contextPath}/images/logo.png">
     </a>
     <span class="navbar-text"><fmt:message key="common.tagline" /></span>

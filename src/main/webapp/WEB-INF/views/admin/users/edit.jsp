@@ -24,14 +24,23 @@ ${message}
         <div class="form-group">
             <label for="name"><fmt:message key="edit.user.name" /></label>
             <input type="text" class="form-control" value="${name}" id="name" name="name"/>
+            <c:if test="${messages.containsKey('name')}">
+                <p style="color: red">${messages.get('name')}</p>
+            </c:if>
         </div>
         <div class="form-group">
             <label for="email"><fmt:message key="edit.user.email" /></label>
             <input type="text" class="form-control" value="${email}" id="email" name="email"/>
+            <c:if test="${messages.containsKey('email')}">
+                <p style="color: red">${messages.get('email')}</p>
+            </c:if>
         </div>
         <div class="form-group">
             <label for="password"><fmt:message key="edit.user.password" /></label>
             <input type="text" class="form-control" id="password" name="password"/>
+            <c:if test="${messages.containsKey('password')}">
+                <p style="color: red">${messages.get('password')}</p>
+            </c:if>
         </div>
         <div class="form-group">
             <label for="password"><fmt:message key="edit.user.password" /></label>

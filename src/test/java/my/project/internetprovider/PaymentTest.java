@@ -1,9 +1,7 @@
 package my.project.internetprovider;
 
 import my.project.internetprovider.db.entity.Payment;
-import my.project.internetprovider.exception.NotFoundException;
-import my.project.internetprovider.exception.UpdateException;
-import my.project.internetprovider.exception.ValidationException;
+import my.project.internetprovider.exception.CheckException;
 import my.project.internetprovider.service.PaymentService;
 import my.project.internetprovider.service.impl.PaymentServiceImpl;
 import my.project.internetprovider.util.ConnectionUtil;
@@ -70,7 +68,7 @@ public class PaymentTest {
                     .setName("test payment")
                     .build());
             Assert.assertTrue(payment.getId() != 0L);
-        } catch (ValidationException e) {
+        } catch (CheckException e) {
             e.printStackTrace();
         }
     }
@@ -88,7 +86,7 @@ public class PaymentTest {
         Payment payment = null;
         try {
             payment = paymentService.findById(1L);
-        } catch (NotFoundException e) {
+        } catch (CheckException e) {
             e.printStackTrace();
         }
 
@@ -104,9 +102,7 @@ public class PaymentTest {
             payment.setName("test");
             paymentService.update(payment);
             payment = paymentService.findById(1L);
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        } catch (UpdateException e) {
+        } catch (CheckException e) {
             e.printStackTrace();
         }
 
@@ -119,7 +115,7 @@ public class PaymentTest {
         try {
             paymentService.delete(1L);
             paymentService.findById(1L);
-        } catch (NotFoundException e) {
+        } catch (CheckException e) {
             Assert.assertTrue(true);
         }
     }

@@ -6,7 +6,6 @@ import my.project.internetprovider.db.entity.Plan;
 import my.project.internetprovider.db.entity.User;
 import my.project.internetprovider.service.PlanService;
 import my.project.internetprovider.service.impl.PlanServiceImpl;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -26,7 +25,11 @@ public class PlanPageCommand implements Command {
     }
 
     private int initCurrentPage(HttpServletRequest request) {
-        int currentPage = Integer.valueOf(request.getParameter("pn"));
+        String pn = request.getParameter("pn");
+        if (pn == null)
+            return 1;
+
+        int currentPage = Integer.valueOf(pn);
         if (currentPage <= 0)
             currentPage = 1;
 
@@ -35,16 +38,16 @@ public class PlanPageCommand implements Command {
 
     private String initSortedField(HttpServletRequest request) {
         String sf = request.getParameter("sf");
-        if (sf.isEmpty())
-            sf="name";
+        if (sf == null || sf.isEmpty())
+            return "name";
 
         return sf;
     }
 
     private String initSortDirection(HttpServletRequest request) {
         String sd = request.getParameter("sd");
-        if (sd.isEmpty())
-            sd="asc";
+        if (sd == null || sd.isEmpty())
+            return "asc";
 
         return sd;
     }

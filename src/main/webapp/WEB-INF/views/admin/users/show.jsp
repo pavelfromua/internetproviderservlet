@@ -80,6 +80,9 @@
                 <table width="100%">
                     <tr><td>
                         <form method="POST" action="/admin/users/cab/pay" class="form-inline">
+                            <c:if test="${messages.containsKey('name')}">
+                                <p style="color: red">${messages.get('name')}</p>
+                            </c:if>
                             <div class="form-group mb-2" >
                                 <fmt:message key="cabinet.menu.payments.menupay.label" />
                             </div>

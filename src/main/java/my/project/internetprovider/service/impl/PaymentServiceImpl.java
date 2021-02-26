@@ -2,15 +2,12 @@ package my.project.internetprovider.service.impl;
 
 import my.project.internetprovider.db.dao.DaoFactory;
 import my.project.internetprovider.db.dao.PaymentDao;
-import my.project.internetprovider.db.dao.PlanDao;
 import my.project.internetprovider.db.entity.Payment;
-import my.project.internetprovider.db.entity.Plan;
-import my.project.internetprovider.exception.NotFoundException;
-import my.project.internetprovider.exception.UpdateException;
-import my.project.internetprovider.exception.ValidationException;
+import my.project.internetprovider.exception.CheckException;
 import my.project.internetprovider.service.PaymentService;
-
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PaymentServiceImpl implements PaymentService {
     private boolean testMode = false;
@@ -34,32 +31,35 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public Payment create(Payment payment) throws ValidationException {
+    public Payment create(Payment payment) throws CheckException {
         try (PaymentDao dao = daoFactory.createPaymentDao(testMode)) {
             return dao.create(payment);
         }
     }
 
     @Override
-    public Payment findById(Long id) throws NotFoundException {
+    public Payment findById(Long id) throws CheckException {
         try (PaymentDao dao = daoFactory.createPaymentDao(testMode)) {
             Payment payment = dao.findById(id).orElseThrow(() ->
-                    new NotFoundException("Payment not found"));
+                    new CheckException("paymentNotFound"));
 
             return payment;
         }
     }
 
     @Override
-    public void update(Payment payment) throws UpdateException {
+    public void update(Payment payment) throws CheckException {
         try (PaymentDao dao = daoFactory.createPaymentDao(testMode)) {
-            if (payment.getName().isEmpty()) {
-                throw new UpdateException("Name can't be empty");
-            }
+            Map<String, String> messages = new HashMap<>();
 
-            if (payment.getAmount() <= 0) {
-                throw new UpdateException("Payment can't be less or equal 0");
-            }
+            if (payment.getName().isEmpty())
+                messages.put("name", "paymentNameNotEmpty");
+
+            if (payment.getAmount() <= 0)
+                messages.put("name", "paymentAmountNotEmpty");
+
+            if (messages.size() > 0)
+                throw new CheckException(CheckException.fromMultipleToSingleMessage(messages));
 
             dao.update(payment);
         }

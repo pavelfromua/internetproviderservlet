@@ -5,13 +5,13 @@ import my.project.internetprovider.db.dao.DaoFactory;
 import my.project.internetprovider.db.dao.UserDao;
 import my.project.internetprovider.db.entity.Account;
 import my.project.internetprovider.db.entity.User;
-import my.project.internetprovider.exception.AuthenticationException;
-import my.project.internetprovider.exception.NotFoundException;
-import my.project.internetprovider.exception.RegistrationException;
-import my.project.internetprovider.exception.UpdateException;
+import my.project.internetprovider.exception.CheckException;
 import my.project.internetprovider.service.UserService;
+import my.project.internetprovider.util.EmailValidator;
 import my.project.internetprovider.util.HashUtil;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class UserServiceImpl implements UserService {
@@ -55,10 +55,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User findById(Long id) throws NotFoundException {
+    public User findById(Long id) throws CheckException {
         try (UserDao dao = daoFactory.createUserDao(testMode)) {
             User user = dao.findById(id).orElseThrow(() ->
-                    new NotFoundException("User not found"));
+                    new CheckException("userNotFound"));
 
             return user;
         }
@@ -88,40 +88,52 @@ public class UserServiceImpl implements UserService {
         return false;
     }
 
-    public User login(String login, String password) throws AuthenticationException {
+    public User login(String login, String password) throws CheckException {
         try (UserDao dao = daoFactory.createUserDao(testMode)) {
             User user = dao.findByLogin(login).orElseThrow(() ->
-                    new AuthenticationException("Incorrect login or password"));
+                    new CheckException("incorrectLoginOrPassword"));
 
             if (isPasswordValid(user, password)) {
                 return user;
             }
 
-            throw new AuthenticationException("Incorrect login or password");
+            throw new CheckException("incorrectLoginOrPassword");
         }
     }
 
-    public User register(String login, String password, String name, String email) throws RegistrationException {
-        if (name.isEmpty()) {
-            throw new RegistrationException("Name can't be empty");
+    public User register(String login, String password, String name, String email) throws CheckException {
+        Map<String, String> messages = new HashMap<>();
+
+        if (name.length() < 2 || name.length() > 120)
+            messages.put("name", "new.user.name.size");
+
+        if (name.isEmpty())
+            messages.put("name", "new.user.name.notEmpty");
+
+        if (!EmailValidator.validate(email))
+            messages.put("email", "new.user.email.beValid");
+
+        if (email.isEmpty())
+            messages.put("email", "new.user.email.notEmpty");
+
+        if (login.length() < 2 || login.length() > 30) {
+            messages.put("login", "new.user.login.size");
         }
 
-        if (email.isEmpty()) {
-            throw new RegistrationException("Email can't be empty");
-        }
-
-        if (login.isEmpty()) {
-            throw new RegistrationException("Login can't be empty");
-        }
+        if (login.isEmpty())
+            messages.put("login", "new.user.login.notEmpty");
 
         if (password.isEmpty()) {
-            throw new RegistrationException("Password can't be empty");
+            messages.put("password", "new.user.password.notEmpty");
         }
+
+        if (messages.size() > 0)
+            throw new CheckException(CheckException.fromMultipleToSingleMessage(messages));
 
         try (UserDao dao = daoFactory.createUserDao(testMode)) {
             Optional<User> userOptional = dao.findByLogin(login);
             if (userOptional.isPresent()) {
-                throw new RegistrationException("Login is already taken");
+                throw new CheckException("login=new.user.login.isTaken");
             }
 
             User user = User.newBuilder()
@@ -136,18 +148,28 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateProfile(Long id, String name, String email, String password, String cpassword) throws UpdateException {
-        if (name.isEmpty()) {
-            throw new UpdateException("Name can't be empty");
-        }
+    public void updateProfile(Long id, String name, String email, String password, String cpassword) throws CheckException {
+        Map<String, String> messages = new HashMap<>();
 
-        if (email.isEmpty()) {
-            throw new UpdateException("Email can't be empty");
-        }
+        if (name.length() < 2 || name.length() > 120)
+            messages.put("name", "edit.user.name.size");
+
+        if (name.isEmpty())
+            messages.put("name", "edit.user.name.notEmpty");
+
+        if (!EmailValidator.validate(email))
+            messages.put("email", "edit.user.email.beValid");
+
+        if (email.isEmpty())
+            messages.put("email", "edit.user.email.notEmpty");
+
 
         if (!password.isEmpty() && !cpassword.equals(password)) {
-            throw new UpdateException("Confirm password unequal to the password");
+            messages.put("password", "passwordConfirmError");
         }
+
+        if (messages.size() > 0)
+            throw new CheckException(CheckException.fromMultipleToSingleMessage(messages));
 
         User user = User.newBuilder()
                 .setId(id)

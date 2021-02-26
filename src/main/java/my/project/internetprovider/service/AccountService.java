@@ -2,13 +2,12 @@ package my.project.internetprovider.service;
 
 import my.project.internetprovider.db.entity.Account;
 import my.project.internetprovider.db.entity.Plan;
-import my.project.internetprovider.exception.NotFoundException;
-
+import my.project.internetprovider.exception.CheckException;
 import java.util.List;
 import java.util.Map;
 
 public interface AccountService extends GenericService<Account, Long> {
-    Account findByUserId(Long id) throws NotFoundException;
+    Account findByUserId(Long id) throws CheckException;
 
     Map<String, ?> getDataForClientCabinet(Long userId);
 

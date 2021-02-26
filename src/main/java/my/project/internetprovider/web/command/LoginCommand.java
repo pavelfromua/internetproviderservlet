@@ -2,17 +2,15 @@ package my.project.internetprovider.web.command;
 
 import my.project.internetprovider.db.Role;
 import my.project.internetprovider.db.entity.User;
-import my.project.internetprovider.exception.AuthenticationException;
+import my.project.internetprovider.exception.CheckException;
 import my.project.internetprovider.service.UserService;
 import my.project.internetprovider.service.impl.UserServiceImpl;
 import my.project.internetprovider.util.Language;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.HashSet;
-import java.util.ResourceBundle;
-
+import java.util.Locale;
 
 public class LoginCommand implements Command {
     private UserService userService = new UserServiceImpl();
@@ -27,11 +25,11 @@ public class LoginCommand implements Command {
                 .getServletContext()
                 .getAttribute("loggedUsers");
 
-        ResourceBundle bundle = ResourceBundle.getBundle("messages",
-                Language.getLocale((String) session.getAttribute("language")));
+        Locale language = Language.getLocale((String) session.getAttribute("language"));
 
         if (loggedUsers.contains(login)) {
-            request.setAttribute("message", bundle.getString("alreadyLogged"));
+            request.setAttribute("message", Language
+                    .getLocalizedMessage("alreadyLogged", language));
             return "/login.jsp";
         }
 
@@ -48,8 +46,8 @@ public class LoginCommand implements Command {
                 default: return "/index.jsp";
 
             }
-        } catch (AuthenticationException e) {
-            request.setAttribute("message", e.getMessage());
+        } catch (CheckException e) {
+            request.setAttribute("message", Language.getLocalizedMessage(e.getMessage(), language));
             return "/login.jsp";
         }
     }

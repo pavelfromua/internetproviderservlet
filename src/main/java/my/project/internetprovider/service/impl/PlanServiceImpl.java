@@ -1,17 +1,14 @@
 package my.project.internetprovider.service.impl;
 
-
 import my.project.internetprovider.db.dao.DaoFactory;
 import my.project.internetprovider.db.dao.PlanDao;
 import my.project.internetprovider.db.entity.Page;
-import my.project.internetprovider.db.entity.Payment;
 import my.project.internetprovider.db.entity.Plan;
-import my.project.internetprovider.exception.NotFoundException;
-import my.project.internetprovider.exception.UpdateException;
-import my.project.internetprovider.exception.ValidationException;
+import my.project.internetprovider.exception.CheckException;
 import my.project.internetprovider.service.PlanService;
-
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PlanServiceImpl implements PlanService {
     private boolean testMode = false;
@@ -35,48 +32,66 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public Plan create(Plan plan) throws ValidationException {
+    public Plan create(Plan plan) throws CheckException {
+        String name = plan.getName();
+
         try (PlanDao dao = daoFactory.createPlanDao(testMode)) {
-            if (plan.getName().isEmpty()) {
-                throw new ValidationException("Name can't be empty");
-            }
+            Map<String, String> messages = new HashMap<>();
+
+            if (name.length() < 2 || name.length() > 120)
+                messages.put("name", "new.item.plan.name.size");
+
+            if (name.isEmpty())
+                messages.put("name", "new.item.plan.name.notEmpty");
 
             if (plan.getPrice() <= 0) {
-                throw new ValidationException("Price can't be less or equal 0");
+                messages.put("price", "new.item.plan.price.notEmpty");
             }
 
             if (plan.getProduct().getId() == 0L) {
-                throw new ValidationException("Service can't be empty");
+                messages.put("product", "serviceNotEmpty");
             }
+
+            if (messages.size() > 0)
+                throw new CheckException(CheckException.fromMultipleToSingleMessage(messages));
 
             return dao.create(plan);
         }
     }
 
     @Override
-    public Plan findById(Long id) throws NotFoundException {
+    public Plan findById(Long id) throws CheckException {
         try (PlanDao dao = daoFactory.createPlanDao(testMode)) {
             Plan plan = dao.findById(id).orElseThrow(() ->
-                    new NotFoundException("Plan not found"));
+                    new CheckException("planNotFound"));
 
             return plan;
         }
     }
 
     @Override
-    public void update(Plan plan) throws UpdateException {
+    public void update(Plan plan) throws CheckException {
+        String name = plan.getName();
+
         try (PlanDao dao = daoFactory.createPlanDao(testMode)) {
-            if (plan.getName().isEmpty()) {
-                throw new UpdateException("Name can't be empty");
-            }
+            Map<String, String> messages = new HashMap<>();
+
+            if (name.length() < 2 || name.length() > 120)
+                messages.put("name", "edit.item.plan.name.size");
+
+            if (name.isEmpty())
+                messages.put("name", "edit.item.plan.name.notEmpty");
 
             if (plan.getPrice() <= 0) {
-                throw new UpdateException("Price can't be less or equal 0");
+                messages.put("price", "edit.item.plan.price.notEmpty");
             }
 
             if (plan.getProduct().getId() == 0L) {
-                throw new UpdateException("Service can't be empty");
+                messages.put("product", "serviceNotEmpty");
             }
+
+            if (messages.size() > 0)
+                throw new CheckException(CheckException.fromMultipleToSingleMessage(messages));
 
             dao.update(plan);
         }

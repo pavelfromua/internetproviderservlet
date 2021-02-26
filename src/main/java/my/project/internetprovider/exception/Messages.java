@@ -7,7 +7,7 @@ package my.project.internetprovider.exception;
  */
 public class Messages {
 
-	private Messages() {}
+    private Messages() {}
 
 	public static final String ERR_CANNOT_OBTAIN_QUERY_LIST = "Cannot obtain a file with queries to db";
 

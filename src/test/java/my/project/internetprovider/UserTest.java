@@ -2,10 +2,7 @@ package my.project.internetprovider;
 
 import my.project.internetprovider.db.entity.Account;
 import my.project.internetprovider.db.entity.User;
-import my.project.internetprovider.exception.AuthenticationException;
-import my.project.internetprovider.exception.NotFoundException;
-import my.project.internetprovider.exception.RegistrationException;
-import my.project.internetprovider.exception.UpdateException;
+import my.project.internetprovider.exception.CheckException;
 import my.project.internetprovider.service.AccountService;
 import my.project.internetprovider.service.UserService;
 import my.project.internetprovider.service.impl.AccountServiceImpl;
@@ -68,7 +65,7 @@ public class UserTest {
         try {
             user = userService.register("mock", "111", "mock", "mock@gmail.com");
             Assert.assertTrue(user.getId() != 0L);
-        } catch (RegistrationException e) {
+        } catch (CheckException e) {
             e.printStackTrace();
         }
     }
@@ -86,7 +83,7 @@ public class UserTest {
         User user = null;
         try {
             user = userService.findById(1L);
-        } catch (NotFoundException e) {
+        } catch (CheckException e) {
             e.printStackTrace();
         }
 
@@ -102,9 +99,7 @@ public class UserTest {
             user.setName("update");
             userService.update(user);
             user = userService.findById(1L);
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        } catch (UpdateException e) {
+        } catch (CheckException e) {
             e.printStackTrace();
         }
 
@@ -118,9 +113,7 @@ public class UserTest {
         try {
             userService.updateProfile(1L, "profile", "profile@gmail.com", "333", "333");
             user = userService.findById(1L);
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        } catch (UpdateException e) {
+        } catch (CheckException e) {
             e.printStackTrace();
         }
 
@@ -133,7 +126,7 @@ public class UserTest {
         User user = null;
         try {
             user = userService.login("mock", "111");
-        } catch (AuthenticationException e) {
+        } catch (CheckException e) {
             e.printStackTrace();
         }
 
@@ -149,7 +142,7 @@ public class UserTest {
             accountService.delete(account.getId());
             userService.delete(1L);
             userService.findById(1L);
-        } catch (NotFoundException e) {
+        } catch (CheckException e) {
             Assert.assertTrue(true);
         }
     }

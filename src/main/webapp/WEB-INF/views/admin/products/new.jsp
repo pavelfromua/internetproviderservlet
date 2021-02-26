@@ -18,6 +18,9 @@
         <div class="form-group">
             <label for="name"><fmt:message key="new.item.product.name" /></label>
             <input type="text" class="form-control" value="${name}" id="name" name="name" />
+            <c:if test="${messages.containsKey('name')}">
+                <p style="color: red">${messages.get('name')}</p>
+            </c:if>
         </div>
         <button type="submit" class="btn btn-primary" value="signIn"><fmt:message key="new.item.product.create" /></button>
     </form>

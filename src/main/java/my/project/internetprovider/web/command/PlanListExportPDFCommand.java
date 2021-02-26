@@ -6,7 +6,7 @@ import my.project.internetprovider.db.entity.User;
 import my.project.internetprovider.service.PlanService;
 import my.project.internetprovider.service.impl.PlanServiceImpl;
 import my.project.internetprovider.util.PlanPDFExporter;
-
+import org.apache.log4j.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.List;
 
 public class PlanListExportPDFCommand implements Command {
+    private static final Logger LOG = Logger.getLogger(PlanListExportPDFCommand.class);
     private PlanService planService = new PlanServiceImpl();
 
     @Override
@@ -35,7 +36,7 @@ public class PlanListExportPDFCommand implements Command {
         try {
             exporter.export(response);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error(e.getMessage());
         }
 
         HttpSession session = request.getSession();
