@@ -63,7 +63,10 @@ public class UserTest {
         UserService userService = new UserServiceImpl(true);
         User user = null;
         try {
+            //user = userService.register("mock", "111", "mock", "mock@gmail.com");
             user = userService.register("mock", "111", "mock", "mock@gmail.com");
+            System.out.println(user.getPassword());
+            System.out.println(user.getSalt());
             Assert.assertTrue(user.getId() != 0L);
         } catch (CheckException e) {
             e.printStackTrace();

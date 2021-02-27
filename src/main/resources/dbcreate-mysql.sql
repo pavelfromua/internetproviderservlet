@@ -43,21 +43,11 @@ CREATE TABLE users(
     email VARCHAR(120) NOT NULL,
 	password VARCHAR(256) NOT NULL,
     salt VARBINARY(500) NOT NULL,
-	
--- this declaration contains the foreign key constraint	
--- role_id in users table is associated with id in roles table
--- role_id of user = id of role
-	role_id BIGINT NOT NULL REFERENCES roles(id)
-
--- removing a row with some ID from roles table implies removing 
--- all rows from users table for which ROLES_ID=ID
--- default value is ON DELETE RESTRICT, it means you cannot remove
--- row with some ID from the roles table if there are rows in 
--- users table with ROLES_ID=ID
-		ON DELETE CASCADE 
-
--- the same as previous but updating is used insted deleting
-		ON UPDATE RESTRICT
+    role_id BIGINT NOT NULL,
+        CONSTRAINT FK_roles FOREIGN KEY (role_id)
+        REFERENCES roles (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
 );
 
 CREATE TABLE products
@@ -116,3 +106,4 @@ CREATE TABLE accounts_plans
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
 );
+                                                                       );

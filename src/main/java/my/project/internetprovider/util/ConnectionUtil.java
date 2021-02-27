@@ -29,4 +29,19 @@ public class ConnectionUtil {
             throw new RuntimeException("Can't establish the connection to DB", e);
         }
     }
+
+    public static Connection getConnection(String url, String user, String password) {
+        Properties connectionProperties = new Properties();
+        connectionProperties.put("user", user);
+        connectionProperties.put("password", password);
+
+        try {
+            Connection connection = DriverManager.getConnection(url, connectionProperties);
+            connection.setAutoCommit(false);
+
+            return connection;
+        } catch (SQLException e) {
+            throw new RuntimeException("Can't establish the connection to DB", e);
+        }
+    }
 }

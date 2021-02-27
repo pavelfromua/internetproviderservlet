@@ -18,9 +18,6 @@
             <li class="nav-item">
                 <a class="nav-link" href="${pageContext.request.contextPath}/login"><fmt:message key="main.nav.cabinet" /></a>
             </li>
-<%--            <li class="nav-item">--%>
-<%--                <a class="nav-link" href="${pageContext.request.contextPath}/admin/users/new">registration</a>--%>
-<%--            </li>--%>
             <li class="nav-item">
                 <fmt:message key="lang.en" var="alt_en" />
                 <a class="nav-link" href="/?language=en"><img src="${pageContext.request.contextPath}/images/en.png" alt="${alt_en}"></a>
